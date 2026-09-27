@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pawan TV</title>
+    <style>
+        :root {
+            --bg: #070707;
+            --surface: rgba(255,255,255,0.05);
+            --surface-2: rgba(255,255,255,0.08);
+            --border: rgba(255,255,255,0.1);
+            --accent: #e50914;
+            --accent-soft: rgba(229,9,20,0.18);
+            --text: #f5f5f5;
+            --text-muted: #9a9a9a;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 8px 32px rgba(0,0,0,0.45);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== Loading / Splash ===== */
+        #loadingScreen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.4s ease, visibility 0.4s;
+        }
+        #loadingScreen.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loading-logo {
+            font-size: 2.6rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 3px;
+            margin-bottom: 28px;
+            text-shadow: 0 0 40px rgba(229,9,20,0.4);
+        }
+        .loading-bar {
+            width: 160px;
+            height: 3px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .loading-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #ff4d4d);
+            border-radius: 4px;
+            animation: loadBar 1.2s ease-in-out infinite;
+        }
+        @keyframes loadBar {
+            0% { width: 0%; transform: translateX(0); }
+            50% { width: 70%; }
+            100% { width: 100%; transform: translateX(0); }
+        }
+        .loading-text {
+            color: #555;
+            font-size: 0.8rem;
+            margin-top: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Chrome / Adblock screens */
+        #chromeCheckScreen, #adblockCheckScreen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 999999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+        }
+        #chromeCheckScreen .icon, #adblockCheckScreen .icon { font-size: 3.5rem; margin-bottom: 18px; }
+        #chromeCheckScreen h2, #adblockCheckScreen h2 { font-size: 1.35rem; color: var(--accent); margin-bottom: 10px; }
+        #chromeCheckScreen p, #adblockCheckScreen p { font-size: 0.9rem; color: var(--text-muted); max-width: 320px; line-height: 1.5; margin-bottom: 22px; }
+        .btn-action {
+            padding: 11px 22px;
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            display: inline-block;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-action:active { transform: scale(0.96); }
+
+        /* ===== Home ===== */
+        #homeScreen { min-height: 100vh; display: none; }
+        .home-header {
+            background: linear-gradient(180deg, rgba(7,7,7,0.97) 0%, rgba(7,7,7,0.85) 100%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 14px 14px 10px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid var(--border);
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .app-logo {
+            font-size: 1.45rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-shadow: 0 0 24px rgba(229,9,20,0.35);
+        }
+        .points-badge {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .folder-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: none;
+        }
+        .folder-tabs::-webkit-scrollbar { display: none; }
+        .folder-tab {
+            padding: 6px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.78rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .folder-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(229,9,20,0.3);
+        }
+        .search-bar { padding: 0 0 6px; }
+        .search-input {
+            width: 100%;
+            padding: 11px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            color: var(--text);
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .search-input::placeholder { color: #666; }
+        .search-input:focus {
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.07);
+        }
+
+        .folder-section { margin-bottom: 22px; padding: 0 12px; }
+        .folder-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+        }
+        .folder-title::before {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .stories-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: none;
+        }
+        .stories-scroll::-webkit-scrollbar { display: none; }
+
+        .stories-grid-user {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+            gap: 12px;
+        }
+
+        .story-card-user {
+            flex-shrink: 0;
+            width: 105px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+        .stories-grid-user .story-card-user { width: 100%; }
+        .story-card-user:active { transform: scale(0.96); }
+
+        .story-poster-user {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            display: block;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            background: #111;
+        }
+        .story-poster-placeholder-user {
+            width: 100%;
+            height: 150px;
+            border-radius: var(--radius);
+            background: linear-gradient(145deg, #151520, #1a1a2e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+        .story-card-user h4 {
+            font-size: 0.72rem;
+            margin-top: 7px;
+            line-height: 1.3;
+            color: #ddd;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            font-weight: 500;
+        }
+        .story-epi-badge, .story-views-badge {
+            position: absolute;
+            top: 6px;
+            background: rgba(0,0,0,0.78);
+            backdrop-filter: blur(6px);
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 0.6rem;
+            color: #eee;
+            font-weight: 500;
+        }
+        .story-epi-badge { right: 6px; border: 1px solid rgba(255,255,255,0.12); }
+        .story-views-badge { left: 6px; }
+
+        .empty-state {
+            text-align: center;
+            padding: 70px 20px;
+            color: #555;
+        }
+        .empty-state .icon { font-size: 3.8rem; margin-bottom: 14px; opacity: 0.7; }
+
+        /* ===== Player ===== */
+        #playerScreen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        #playerScreen.active { display: flex; }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            background: #000;
+            overflow: hidden;
+            min-height: 0;
+        }
+        #mainVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .player-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            transition: opacity 0.28s ease;
+            pointer-events: none;
+        }
+        .player-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .player-top {
+            background: linear-gradient(180deg, rgba(0,0,0,0.88) 0%, transparent 100%);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .btn-back-player, .btn-download-player, .btn-epi-list {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.12);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.05rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(12px);
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-back-player:active, .btn-download-player:active, .btn-epi-list:active {
+            background: rgba(255,255,255,0.22);
+        }
+        .player-story-title {
+            flex: 1;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .btn-download-player { margin-right: 4px; }
+        .btn-epi-list { position: relative; }
+        .epi-count-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--accent);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .center-controls {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+        .btn-prev, .btn-next, .btn-play-pause {
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 50%;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            transition: transform 0.15s, background 0.15s;
+        }
+        .btn-play-pause { width: 58px; height: 58px; font-size: 1.5rem; }
+        .btn-prev, .btn-next { width: 44px; height: 44px; font-size: 1rem; }
+        .btn-prev:active, .btn-next:active, .btn-play-pause:active { transform: scale(0.92); }
+
+        .player-bottom {
+            background: linear-gradient(0deg, rgba(0,0,0,0.92) 0%, transparent 100%);
+            padding: 10px 16px 16px;
+        }
+        .epi-title-display {
+            font-size: 0.82rem;
+            color: #bbb;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .video-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 4px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .video-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #ff3b3b);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.08s linear;
+        }
+
+        .player-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .action-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .btn-like {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            cursor: pointer;
+            padding: 7px 14px;
+            border-radius: 50px;
+            transition: all 0.25s;
+        }
+        .btn-like .heart-icon { font-size: 1.05rem; transition: transform 0.25s; display: inline-block; }
+        .btn-like .like-count { font-size: 0.82rem; color: #ddd; font-weight: 600; }
+        .btn-like.liked {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+        }
+        .btn-like.liked .heart-icon,
+        .btn-like.liked .like-count { color: var(--accent); }
+        .btn-like.animate .heart-icon { transform: scale(1.45); }
+        .views-display {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #aaa;
+            font-weight: 500;
+        }
+
+        .swipe-indicator {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.68rem;
+            color: rgba(255,255,255,0.28);
+            pointer-events: none;
+            letter-spacing: 0.3px;
+        }
+        .swipe-indicator.top { top: 64px; }
+        .swipe-indicator.bottom { bottom: 100px; }
+
+        .video-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 10;
+        }
+        .video-loading.show { display: block; }
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(255,255,255,0.12);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .like-popup {
+            position: absolute;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.6rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 200;
+        }
+        .like-popup.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-30px);
+        }
+
+        .next-epi-toast {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(12,12,12,0.94);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            padding: 10px 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        .next-epi-toast.show { display: flex; }
+        .btn-cancel-next {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 6px;
+            color: #fff;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        /* Episode Panel */
+        #epiPanel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            max-width: 240px;
+            width: auto;
+            height: 100%;
+            background: rgba(10,10,10,0.97);
+            border-left: 1px solid var(--border);
+            z-index: 10001;
+            transition: right 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(20px);
+        }
+        #epiPanel.open { right: 0; }
+        .epi-panel-header {
+            padding: 14px 12px;
+            background: rgba(229,9,20,0.08);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .epi-panel-header h3 { font-size: 0.9rem; color: var(--accent); font-weight: 700; }
+        .btn-close-epi {
+            width: 28px;
+            height: 28px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .epi-number-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+        }
+        .epi-number-grid::-webkit-scrollbar { width: 3px; }
+        .epi-number-grid::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+        .epi-num-btn {
+            width: 38px;
+            height: 38px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: #bbb;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .epi-num-btn:active { transform: scale(0.9); }
+        .epi-num-btn.playing {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 16px rgba(229,9,20,0.45);
+        }
+
+        #epiPanelOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 10000;
+        }
+        #epiPanelOverlay.active { display: block; }
+
+        /* Download Modal */
+        #downloadModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.78);
+            z-index: 10002;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #downloadModal.active { display: flex; }
+        .download-modal-content {
+            background: #121212;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 340px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .download-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .download-modal-header h3 { font-size: 1.05rem; color: var(--accent); font-weight: 700; }
+        .download-batch-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        .download-batch-btn {
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .download-batch-btn:hover,
+        .download-batch-btn:active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Download Progress Screen Overlay */
+        #downloadProgressOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #downloadProgressOverlay.active {
+            display: flex;
+        }
+        .download-progress-box {
+            background: #151515;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 320px;
+            padding: 24px 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        .download-progress-box h3 {
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+        .download-status-txt {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+        .dl-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .dl-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), #ff4d4d);
+            transition: width 0.2s ease;
+            border-radius: 10px;
+        }
+        .dl-percent-txt {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 18px;
+        }
+        .btn-cancel-download {
+            padding: 10px 28px;
+            background: transparent;
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-cancel-download:active {
+            background: #ff4444;
+            color: #fff;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 480px) {
+            #epiPanel { max-width: 200px; }
+            .epi-num-btn { width: 34px; height: 34px; font-size: 0.76rem; }
+            .stories-grid-user { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+            .story-poster-user, .story-poster-placeholder-user { height: 132px; }
+            .story-card-user { width: 92px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="chromeCheckScreen">
+    <div class="icon">🌐</div>
+    <h2>Chrome Required</h2>
+    <p>Ye website Google Chrome browser par best chalati hai.</p>
+    <a id="openChromeBtn" href="#" class="btn-action">Open in Chrome</a>
+</div>
+
+<div id="adblockCheckScreen">
+    <div class="icon">🛡️</div>
+    <h2>AdGuard / Ad Blocker Detected</h2>
+    <p>AdGuard, Private DNS, ya koi bhi Ad Blocker active hai. Video dekhne ke liye ise <b>OFF</b> karke page reload karein.</p>
+    <button onclick="location.reload()" class="btn-action">🔄 Refresh Page</button>
+</div>
+
+<div id="loadingScreen">
+    <div class="loading-logo">📺 PAWAN TV</div>
+    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+    <div class="loading-text">Loading...</div>
+</div>
+
+<div id="homeScreen">
+    <div class="home-header">
+        <div class="header-top">
+            <div class="app-logo">📺 PAWAN TV</div>
+            <div class="points-badge" id="pointsDisplay">🪙 5 Pts</div>
+        </div>
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search stories..." oninput="searchStories(this.value)">
+        </div>
+        <div class="folder-tabs" id="folderTabs"></div>
+    </div>
+    <div id="homeContent"></div>
+</div>
+
+<div id="playerScreen">
+    <div class="video-wrapper" id="videoWrapper">
+        <video id="mainVideo" playsinline webkit-playsinline></video>
+        <div class="video-loading" id="videoLoading"><div class="spinner"></div></div>
+        <div class="like-popup" id="likePopup">❤️</div>
+        <div class="player-overlay" id="playerOverlay">
+            <div class="player-top">
+                <button class="btn-back-player" onclick="handleBackBtn()">←</button>
+                <div class="player-story-title" id="playerTitle">Story Name</div>
+                <button class="btn-download-player" onclick="openDownloadModal()">📥</button>
+                <button class="btn-epi-list" onclick="openEpiPanel()">🎬<span class="epi-count-badge" id="epiCountBadge">1</span></button>
+            </div>
+            <div class="center-controls">
+                <button class="btn-prev" onclick="prevEpisode()">⏮</button>
+                <button class="btn-play-pause" id="playPauseBtn" onclick="togglePlayPause()">⏸</button>
+                <button class="btn-next" onclick="nextEpisode()">⏭</button>
+            </div>
+            <div class="swipe-indicator top">⬆ Next</div>
+            <div class="swipe-indicator bottom">⬇ Prev</div>
+            <div class="player-bottom">
+                <div class="epi-title-display" id="currentEpiTitle">Episode 1</div>
+                <div class="video-progress" id="videoProgress" onclick="seekVideo(event)">
+                    <div class="video-progress-fill" id="progressFill"></div>
+                </div>
+                <div class="player-actions">
+                    <div class="action-left">
+                        <button class="btn-like" id="likeBtn" onclick="toggleLike()">
+                            <span class="heart-icon">🤍</span>
+                            <span class="like-count" id="likeCount">0</span>
+                        </button>
+                        <div class="views-display"><span>👁️</span><span id="viewCount">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="next-epi-toast" id="nextEpiToast">
+            <span id="nextEpiText">Next in 3s...</span>
+            <button class="btn-cancel-next" onclick="cancelAutoNext()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="epiPanelOverlay" onclick="closeEpiPanelWithHistory()"></div>
+<div id="epiPanel">
+    <div class="epi-panel-header">
+        <h3>🎬 Episodes</h3>
+        <button class="btn-close-epi" onclick="closeEpiPanelWithHistory()">✕</button>
+    </div>
+    <div class="epi-number-grid" id="epiNumberGrid"></div>
+</div>
+
+<div id="downloadModal">
+    <div class="download-modal-content">
+        <div class="download-modal-header">
+            <h3>📥 Select Episodes Range</h3>
+            <button class="btn-close-epi" onclick="closeDownloadModal()">✕</button>
+        </div>
+        <div class="download-batch-list" id="downloadBatchList"></div>
+    </div>
+</div>
+
+<!-- Download Progress Screen with Cancel Button -->
+<div id="downloadProgressOverlay">
+    <div class="download-progress-box">
+        <h3>📥 Downloading...</h3>
+        <div class="download-status-txt" id="dlStatusTxt">Episode 1 Downloading</div>
+        <div class="dl-bar-container">
+            <div class="dl-bar-fill" id="dlBarFill"></div>
+        </div>
+        <div class="dl-percent-txt" id="dlPercentTxt">0%</div>
+        <button class="btn-cancel-download" onclick="cancelDownload()">✕ Cancel Download</button>
+    </div>
+</div>
+
+<script>
+function checkAndForceChrome() {
+    var ua = navigator.userAgent;
+    var isChrome = /Chrome/.test(ua) && /Google Inc/.test(navigator.vendor);
+    var isEdg = /Edg/.test(ua);
+    var isOPR = /OPR|Opera/.test(ua);
+    var isBrave = navigator.brave !== undefined;
+    var realChrome = isChrome && !isEdg && !isOPR && !isBrave;
+
+    if (!realChrome) {
+        var cleanUrl = window.location.href.replace(/^https?:\/\//, '');
+        var chromeIntent = "intent://" + cleanUrl + "#Intent;scheme=https;package=com.android.chrome;end";
+        document.getElementById('openChromeBtn').setAttribute('href', chromeIntent);
+        setTimeout(function() {
+            if (!realChrome) {
+                document.getElementById('chromeCheckScreen').style.display = 'flex';
+                document.getElementById('loadingScreen').classList.add('hide');
+            }
+        }, 1200);
+        return false;
+    }
+    return true;
+}
+
+function detectAdBlockerAndDNS() {
+    let baitBlocked = false;
+
+    const bait = document.createElement('div');
+    bait.innerHTML = '&nbsp;';
+    bait.className = 'adsbox adsbygoogle ad-placement doubleclick google-ad';
+    bait.style.cssText = 'position:absolute; left:-9999px; top:-9999px; width:1px; height:1px;';
+    document.body.appendChild(bait);
+
+    setTimeout(() => {
+        const style = window.getComputedStyle(bait);
+        if (
+            bait.offsetHeight === 0 ||
+            bait.clientHeight === 0 ||
+            style.display === 'none' ||
+            style.visibility === 'hidden' ||
+            style.opacity === '0'
+        ) {
+            baitBlocked = true;
+        }
+        bait.remove();
+
+        if (baitBlocked) {
+            showAdblockScreen();
+        }
+    }, 300);
+}
+
+function showAdblockScreen() {
+    document.getElementById('adblockCheckScreen').style.display = 'flex';
+    document.getElementById('loadingScreen').classList.add('hide');
+}
+</script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, increment }
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCnCCWVcNhFBTCh7Tu9ctQ7QiGasUvgw4s",
+        authDomain: "kuku-1cb36.firebaseapp.com",
+        projectId: "kuku-1cb36",
+        storageBucket: "kuku-1cb36.firebasestorage.app",
+        messagingSenderId: "1089968385102",
+        appId: "1:1089968385102:web:bf53c0b9b05c5659e3671f",
+        measurementId: "G-FPTKTH9QXT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let stories = [], currentStory = null, currentStoryDocId = null;
+    let currentEpiIndex = 0, currentFolder = 'all';
+    let autoNextTimer = null, overlayTimer = null, isOverlayVisible = false;
+    let touchStartY = 0, touchStartX = 0;
+    let hasLiked = false, viewCounted = false, viewTimer = null;
+    let splashHidden = false;
+
+    // Download cancel variables
+    let isDownloadCancelled = false;
+    let currentXhr = null;
+
+    // ====================== POINTS & ADS SYSTEM ======================
+    let userPoints = parseInt(localStorage.getItem('pawanTV_points'));
+    if (isNaN(userPoints)) {
+        userPoints = 5; // Default 5 points free
+        localStorage.setItem('pawanTV_points', userPoints);
+    }
+
+    function updatePointsUI() {
+        const el = document.getElementById('pointsDisplay');
+        if (el) el.textContent = `🪙 ${userPoints} Pts`;
+    }
+
+    function triggerAd(onSuccess, onError) {
+        // Yahan apna Ad Script Call Karein (Monetag / AdMob / Adsterra Rewarded Ad)
+        // Check agar ad script available hai
+        if (window.show_8923483) { // Example Monetag trigger check
+            window.show_8923483().then(() => {
+                onSuccess();
+            }).catch(() => {
+                onError();
+            });
+        } else {
+            // Simulated Success - (Ad network SDK integration hone par real ad dikhega)
+            const adSuccess = confirm("Aage ke episodes dekhne ke liye Ad dekhein. (OK = Ad Finished, Cancel = Failed)");
+            if (adSuccess) {
+                onSuccess();
+            } else {
+                onError();
+            }
+        }
+    }
+    // ==================================================================
+
+    function hideSplash() {
+        if (splashHidden) return;
+        splashHidden = true;
+        const loading = document.getElementById('loadingScreen');
+        loading.classList.add('hide');
+        setTimeout(() => {
+            loading.style.display = 'none';
+        }, 400);
+        document.getElementById('homeScreen').style.display = 'block';
+    }
+
+    function pushState(state) { history.pushState({ screen: state }, '', ''); }
+
+    window.addEventListener('popstate', function() {
+        if (document.getElementById('downloadModal').classList.contains('active')) {
+            closeDownloadModal(); pushState('player'); return;
+        }
+        if (document.getElementById('epiPanel').classList.contains('open')) {
+            closeEpiPanel(); pushState('player'); return;
+        }
+        if (document.getElementById('playerScreen').classList.contains('active')) {
+            closePlayerInternal();
+        }
+    });
+
+    function init() {
+        checkAndForceChrome();
+        detectAdBlockerAndDNS();
+        updatePointsUI();
+
+        history.replaceState({ screen: 'home' }, '', '');
+        setupVideoEvents();
+        setupTouchEvents();
+
+        setTimeout(hideSplash, 2200);
+
+        loadStories();
+    }
+
+    function loadStories() {
+        onSnapshot(collection(db, 'stories'), (snapshot) => {
+            stories = [];
+            snapshot.forEach(d => stories.push({ docId: d.id, ...d.data() }));
+            stories.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+            hideSplash();
+            renderHome();
+
+            if (currentStoryDocId) {
+                const updated = stories.find(s => s.docId === currentStoryDocId);
+                if (updated) { currentStory = updated; updateLikeViewUI(); }
+            }
+        }, (error) => {
+            console.error("Firebase Error:", error);
+            hideSplash();
+            renderHome();
+        });
+    }
+
+    function renderHome() {
+        const content = document.getElementById('homeContent');
+        const tabsEl = document.getElementById('folderTabs');
+        updatePointsUI();
+        if (!stories.length) {
+            tabsEl.innerHTML = '';
+            content.innerHTML = '<div class="empty-state"><div class="icon">📺</div><p style="color:#555;margin-top:10px;">Koi story nahi mili</p></div>';
+            return;
+        }
+        const folders = ['all', ...new Set(stories.map(s => s.folder))];
+        tabsEl.innerHTML = folders.map(f => `
+            <button class="folder-tab ${f === currentFolder ? 'active' : ''}" onclick="filterByFolder('${f}', this)">
+                ${f === 'all' ? '🏠 All' : '📂 ' + f}
+            </button>`).join('');
+        renderContent(currentFolder);
+    }
+    window.renderHome = renderHome;
+
+    function renderContent(folder) {
+        const content = document.getElementById('homeContent');
+        if (folder === 'all') {
+            const folders = [...new Set(stories.map(s => s.folder))];
+            content.innerHTML = folders.map(f => {
+                const fs = stories.filter(s => s.folder === f);
+                return `<div class="folder-section"><div class="folder-title">📂 ${f}</div>
+                    <div class="stories-scroll">${fs.map(s => storyCardHTML(s)).join('')}</div></div>`;
+            }).join('');
+        } else {
+            const filtered = stories.filter(s => s.folder === folder);
+            content.innerHTML = `<div class="folder-section">
+                <div class="stories-grid-user">${filtered.map(s => storyCardHTML(s)).join('')}</div></div>`;
+        }
+    }
+
+    function storyCardHTML(story) {
+        const idx = stories.findIndex(s => s.docId === story.docId);
+        const posterSrc = story.poster || '';
+        const imgTag = posterSrc
+            ? `<img src="${posterSrc}" class="story-poster-user" loading="lazy" alt="" />`
+            : `<div class="story-poster-placeholder-user"><span>🎬</span></div>`;
+
+        return `
+            <div class="story-card-user" onclick="openStory(${idx})">
+                ${imgTag}
+                <span class="story-epi-badge">${story.episodes ? story.episodes.length : 0} Ep</span>
+                <span class="story-views-badge">👁️ ${formatNum(story.views || 0)}</span>
+                <h4>${story.name || ''}</h4>
+            </div>
+        `;
+    }
+
+    function formatNum(n) {
+        if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+        if (n >= 1000) return (n/1000).toFixed(1)+'K';
+        return n.toString();
+    }
+
+    window.filterByFolder = function(folder, btn) {
+        currentFolder = folder;
+        document.querySelectorAll('.folder-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderContent(folder);
+    };
+
+    window.searchStories = function(query) {
+        if (!query.trim()) { renderContent(currentFolder); return; }
+        const filtered = stories.filter(s =>
+            (s.name || '').toLowerCase().includes(query.toLowerCase()) ||
+            (s.folder || '').toLowerCase().includes(query.toLowerCase())
+        );
+        const content = document.getElementById('homeContent');
+        if (!filtered.length) {
+            content.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p style="color:#555;">"${query}" nahi mila</p></div>`;
+        } else {
+            content.innerHTML = `<div class="folder-section">
+                <div class="folder-title">🔍 Results (${filtered.length})</div>
+                <div class="stories-grid-user">${filtered.map(s => storyCardHTML(s)).join('')}</div></div>`;
+        }
+    };
+
+    window.openStory = function(index) {
+        currentStory = stories[index];
+        currentStoryDocId = currentStory.docId;
+        currentEpiIndex = 0;
+        hasLiked = getLikedStatus(currentStoryDocId);
+        viewCounted = false;
+        openPlayer();
+    };
+
+    function openPlayer() {
+        if (!currentStory || !currentStory.episodes || !currentStory.episodes.length) return;
+        document.getElementById('playerScreen').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('playerTitle').textContent = currentStory.name || '';
+        document.getElementById('epiCountBadge').textContent = currentStory.episodes.length;
+        updateLikeViewUI();
+        
+        // Open playing episode without deducting on initial open if already having points
+        if (userPoints <= 0) {
+            checkPointsAndPlay(0);
+        } else {
+            loadEpisode(currentEpiIndex);
+        }
+
+        buildEpiGrid();
+        showOverlay();
+        pushState('player');
+    }
+
+    window.handleBackBtn = function() { history.back(); };
+
+    function closePlayerInternal() {
+        const video = document.getElementById('mainVideo');
+        video.pause();
+        video.src = '';
+        document.getElementById('playerScreen').classList.remove('active');
+        document.body.style.overflow = '';
+        clearTimers();
+        closeEpiPanel();
+        closeDownloadModal();
+        clearTimeout(viewTimer);
+        updatePointsUI();
+    }
+
+    function loadEpisode(index) {
+        if (!currentStory) return;
+        if (index < 0) index = 0;
+        if (index >= currentStory.episodes.length) return;
+        
+        currentEpiIndex = index;
+        const epi = currentStory.episodes[index];
+        const video = document.getElementById('mainVideo');
+        document.getElementById('videoLoading').classList.add('show');
+        video.src = epi.url;
+        video.load();
+        video.play().catch(() => {});
+        document.getElementById('currentEpiTitle').textContent = `Ep ${index + 1}: ${epi.title || ''}`;
+        document.getElementById('playPauseBtn').textContent = '⏸';
+        updateEpiGridHighlight();
+
+        clearTimeout(viewTimer);
+        if (!viewCounted) {
+            viewTimer = setTimeout(() => { countView(); viewCounted = true; }, 10000);
+        }
+    }
+
+    async function countView() {
+        if (!currentStoryDocId) return;
+        try { await updateDoc(doc(db, 'stories', currentStoryDocId), { views: increment(1) }); } catch(e) {}
+    }
+
+    window.toggleLike = async function() {
+        if (!currentStoryDocId) return;
+        const btn = document.getElementById('likeBtn');
+        if (!hasLiked) {
+            hasLiked = true;
+            setLikedStatus(currentStoryDocId, true);
+            btn.classList.add('liked', 'animate');
+            btn.querySelector('.heart-icon').textContent = '❤️';
+            setTimeout(() => btn.classList.remove('animate'), 300);
+            showLikePopup();
+            try { await updateDoc(doc(db, 'stories', currentStoryDocId), { likes: increment(1) }); } catch(e) {}
+        } else {
+            hasLiked = false;
+            setLikedStatus(currentStoryDocId, false);
+            btn.classList.remove('liked');
+            btn.querySelector('.heart-icon').textContent = '🤍';
+            try { await updateDoc(doc(db, 'stories', currentStoryDocId), { likes: increment(-1) }); } catch(e) {}
+        }
+    };
+
+    function showLikePopup() {
+        const p = document.getElementById('likePopup');
+        p.classList.add('show');
+        setTimeout(() => p.classList.remove('show'), 700);
+    }
+
+    function updateLikeViewUI() {
+        if (!currentStory) return;
+        document.getElementById('likeCount').textContent = formatNum(currentStory.likes || 0);
+        document.getElementById('viewCount').textContent = formatNum(currentStory.views || 0);
+        const btn = document.getElementById('likeBtn');
+        if (hasLiked) {
+            btn.classList.add('liked');
+            btn.querySelector('.heart-icon').textContent = '❤️';
+        } else {
+            btn.classList.remove('liked');
+            btn.querySelector('.heart-icon').textContent = '🤍';
+        }
+    }
+
+    function getLikedStatus(docId) {
+        return !!(JSON.parse(localStorage.getItem('pawanTV_likes') || '{}')?.[docId]);
+    }
+    function setLikedStatus(docId, status) {
+        const liked = JSON.parse(localStorage.getItem('pawanTV_likes') || '{}');
+        liked[docId] = status;
+        localStorage.setItem('pawanTV_likes', JSON.stringify(liked));
+    }
+
+    window.togglePlayPause = function() {
+        const video = document.getElementById('mainVideo');
+        if (video.paused) {
+            video.play();
+            document.getElementById('playPauseBtn').textContent = '⏸';
+        } else {
+            video.pause();
+            document.getElementById('playPauseBtn').textContent = '▶';
+        }
+    };
+
+    window.prevEpisode = function() {
+        if (currentEpiIndex > 0) checkPointsAndPlay(currentEpiIndex - 1);
+    };
+
+    window.nextEpisode = function() {
+        if (currentStory && currentEpiIndex < currentStory.episodes.length - 1) {
+            checkPointsAndPlay(currentEpiIndex + 1);
+        }
+    };
+
+    // ================= POINTS CHECK & LOAD LOGIC =================
+    function checkPointsAndPlay(targetIndex) {
+        // Har 5th episode par Ad offer
+        if (targetIndex > 0 && targetIndex % 5 === 0) {
+            const video = document.getElementById('mainVideo');
+            if (video) video.pause();
+
+            triggerAd(
+                () => { // Ad Success
+                    userPoints += 5; // 5 Points Add
+                    userPoints -= 1; // 1 Point deducted for watching this episode
+                    localStorage.setItem('pawanTV_points', userPoints);
+                    updatePointsUI();
+                    alert("🎉 Ad dekhne ke liye 5 Points mile! Ep unlock ho gaya.");
+                    loadEpisode(targetIndex);
+                },
+                () => { // Ad Failed / Cancelled
+                    alert("⚠️ Ad poora nahi hua. Points add nahi ho paye!");
+                }
+            );
+        } else {
+            // Normal Episode logic
+            if (userPoints > 0) {
+                userPoints -= 1; // 1 Point Minus
+                localStorage.setItem('pawanTV_points', userPoints);
+                updatePointsUI();
+                loadEpisode(targetIndex);
+            } else {
+                // Points khatam ho gaye
+                const video = document.getElementById('mainVideo');
+                if (video) video.pause();
+
+                alert("🔒 Aapke Points khatam ho gaye hain! Points add karne ke liye Ad dekhein.");
+                triggerAd(
+                    () => { // Ad Success
+                        userPoints += 5; // 5 Points Add
+                        userPoints -= 1; // 1 Point Deducted
+                        localStorage.setItem('pawanTV_points', userPoints);
+                        updatePointsUI();
+                        alert("🎉 5 Points add ho gaye!");
+                        loadEpisode(targetIndex);
+                    },
+                    () => { // Ad Failed
+                        alert("⚠️ Ad nahi dekha gaya. Episode unlocked nahi hua!");
+                    }
+                );
+            }
+        }
+    }
+    // =============================================================
+
+    function startAutoNext() {
+        if (!currentStory || currentEpiIndex >= currentStory.episodes.length - 1) return;
+        window.nextEpisode();
+    }
+
+    window.cancelAutoNext = function() {
+        clearInterval(autoNextTimer);
+        document.getElementById('nextEpiToast').classList.remove('show');
+    };
+    function clearTimers() {
+        clearInterval(autoNextTimer);
+        clearTimeout(overlayTimer);
+    }
+
+    function showOverlay() {
+        document.getElementById('playerOverlay').classList.add('visible');
+        isOverlayVisible = true;
+        clearTimeout(overlayTimer);
+        overlayTimer = setTimeout(hideOverlay, 3500);
+    }
+    function hideOverlay() {
+        document.getElementById('playerOverlay').classList.remove('visible');
+        isOverlayVisible = false;
+    }
+
+    function setupVideoEvents() {
+        const video = document.getElementById('mainVideo');
+        const wrapper = document.getElementById('videoWrapper');
+        wrapper.addEventListener('click', e => {
+            if (e.target === wrapper || e.target === video) {
+                isOverlayVisible ? hideOverlay() : showOverlay();
+            }
+        });
+
+        video.addEventListener('error', () => {
+            document.getElementById('videoLoading').classList.remove('show');
+        });
+
+        video.addEventListener('waiting', () => document.getElementById('videoLoading').classList.add('show'));
+        video.addEventListener('canplay', () => document.getElementById('videoLoading').classList.remove('show'));
+        video.addEventListener('playing', () => {
+            document.getElementById('videoLoading').classList.remove('show');
+            document.getElementById('playPauseBtn').textContent = '⏸';
+        });
+        video.addEventListener('pause', () => document.getElementById('playPauseBtn').textContent = '▶');
+        video.addEventListener('timeupdate', () => {
+            if (video.duration) {
+                document.getElementById('progressFill').style.width = ((video.currentTime / video.duration) * 100) + '%';
+            }
+        });
+        video.addEventListener('ended', () => startAutoNext());
+    }
+
+    window.seekVideo = function(e) {
+        const video = document.getElementById('mainVideo');
+        const bar = document.getElementById('videoProgress');
+        const rect = bar.getBoundingClientRect();
+        if (video.duration) {
+            video.currentTime = video.duration * ((e.clientX - rect.left) / rect.width);
+        }
+    };
+
+    function setupTouchEvents() {
+        const wrapper = document.getElementById('videoWrapper');
+        wrapper.addEventListener('touchstart', e => {
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+
+        wrapper.addEventListener('touchend', e => {
+            const diffY = touchStartY - e.changedTouches[0].clientY;
+            const diffX = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 50) {
+                diffY > 0 ? window.nextEpisode() : window.prevEpisode();
+            }
+        }, { passive: true });
+
+        let lastTap = 0;
+        wrapper.addEventListener('touchend', e => {
+            const now = Date.now();
+            if (now - lastTap < 300) window.toggleLike();
+            lastTap = now;
+        });
+    }
+
+    function buildEpiGrid() {
+        if (!currentStory || !currentStory.episodes) return;
+
+        const grid = document.getElementById('epiNumberGrid');
+        let html = '';
+
+        currentStory.episodes.forEach((epi, i) => {
+            const isPlaying = i === currentEpiIndex ? 'playing' : '';
+            html += `
+                <button class="epi-num-btn ${isPlaying}"
+                        id="epi-num-${i}"
+                        onclick="selectEpisode(${i})"
+                        title="${epi.title || ''}">
+                    ${i + 1}
+                </button>
+            `;
+        });
+
+        grid.innerHTML = html;
+    }
+
+    function updateEpiGridHighlight() {
+        document.querySelectorAll('.epi-num-btn').forEach((el, i) => el.classList.toggle('playing', i === currentEpiIndex));
+    }
+
+    window.selectEpisode = function(index) {
+        checkPointsAndPlay(index);
+        history.back();
+    };
+
+    window.openEpiPanel = function() {
+        buildEpiGrid();
+        document.getElementById('epiPanel').classList.add('open');
+        document.getElementById('epiPanelOverlay').classList.add('active');
+        pushState('epiPanel');
+        setTimeout(() => {
+            const el = document.getElementById('epi-num-' + currentEpiIndex);
+            if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }, 300);
+    };
+
+    function closeEpiPanel() {
+        document.getElementById('epiPanel').classList.remove('open');
+        document.getElementById('epiPanelOverlay').classList.remove('active');
+    }
+    window.closeEpiPanelWithHistory = function() { history.back(); };
+
+    window.openDownloadModal = function() {
+        if (!currentStory || !currentStory.episodes || !currentStory.episodes.length) return;
+
+        const video = document.getElementById('mainVideo');
+        if (video && !video.paused) {
+            video.pause();
+            document.getElementById('playPauseBtn').textContent = '▶';
+        }
+
+        const batchListEl = document.getElementById('downloadBatchList');
+        const totalEpis = currentStory.episodes.length;
+        const batchSize = 5;
+        let html = '';
+
+        for (let i = 0; i < totalEpis; i += batchSize) {
+            const start = i;
+            const end = Math.min(i + batchSize, totalEpis);
+            html += `
+                <button onclick="downloadBatch(${start}, ${end})" class="download-batch-btn">
+                    <span>Epi ${start + 1} to ${end}</span>
+                    <span>⬇️</span>
+                </button>
+            `;
+        }
+
+        batchListEl.innerHTML = html;
+        document.getElementById('downloadModal').classList.add('active');
+        pushState('downloadModal');
+    };
+
+    window.closeDownloadModal = function() {
+        document.getElementById('downloadModal').classList.remove('active');
+    };
+
+    // ====================== DOWNLOAD WITH CANCEL ======================
+    window.cancelDownload = function() {
+        isDownloadCancelled = true;
+        if (currentXhr) {
+            currentXhr.abort();
+            currentXhr = null;
+        }
+        document.getElementById('downloadProgressOverlay').classList.remove('active');
+        alert('Download cancel ho gaya!');
+    };
+
+    window.downloadBatch = async function(startIndex, endIndex) {
+        if (!currentStory || !currentStory.episodes) return;
+
+        const video = document.getElementById('mainVideo');
+        if (video && !video.paused) {
+            video.pause();
+            document.getElementById('playPauseBtn').textContent = '▶';
+        }
+
+        const workerBaseUrl = "https://orange-dust-287a.aaa39269012.workers.dev/?url=";
+        const batchEpisodes = currentStory.episodes.slice(startIndex, endIndex);
+
+        closeDownloadModal();
+
+        // Reset cancel flag
+        isDownloadCancelled = false;
+        currentXhr = null;
+
+        const overlay = document.getElementById('downloadProgressOverlay');
+        const statusTxt = document.getElementById('dlStatusTxt');
+        const barFill = document.getElementById('dlBarFill');
+        const percentTxt = document.getElementById('dlPercentTxt');
+
+        overlay.classList.add('active');
+
+        for (let i = 0; i < batchEpisodes.length; i++) {
+            if (isDownloadCancelled) break;   // Stop if cancelled
+
+            const epi = batchEpisodes[i];
+            const epiNum = startIndex + i + 1;
+            const finalUrl = workerBaseUrl + encodeURIComponent(epi.url);
+
+            statusTxt.textContent = `Episode ${epiNum} of ${endIndex} Downloading...`;
+            barFill.style.width = '0%';
+            percentTxt.textContent = '0%';
+
+            try {
+                const blob = await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    currentXhr = xhr;   // Store current XHR so we can abort it
+
+                    xhr.open('GET', finalUrl, true);
+                    xhr.responseType = 'blob';
+
+                    xhr.onprogress = (event) => {
+                        if (event.lengthComputable && !isDownloadCancelled) {
+                            const percent = Math.round((event.loaded / event.total) * 100);
+                            barFill.style.width = percent + '%';
+                            percentTxt.textContent = percent + '%';
+                        }
+                    };
+
+                    xhr.onload = () => {
+                        if (isDownloadCancelled) {
+                            reject(new Error("Cancelled"));
+                            return;
+                        }
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            resolve(xhr.response);
+                        } else {
+                            reject(new Error(`HTTP Error ${xhr.status}`));
+                        }
+                    };
+
+                    xhr.onerror = () => reject(new Error("Network Error"));
+                    xhr.onabort = () => reject(new Error("Cancelled"));
+                    xhr.send();
+                });
+
+                if (isDownloadCancelled) break;
+
+                if (blob.size === 0) {
+                    throw new Error("Downloaded file is empty");
+                }
+
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = `${currentStory.name || 'Story'}_Episode_${epiNum}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+
+            } catch (error) {
+                if (error.message === "Cancelled" || isDownloadCancelled) {
+                    break;
+                }
+                console.error(`Episode ${epiNum} download failed:`, error);
+                alert(`Episode ${epiNum} download nahi ho paya.`);
+            }
+        }
+
+        // Hide overlay
+        overlay.classList.remove('active');
+        currentXhr = null;
+        isDownloadCancelled = false;
+    };
+    // ================================================================
+
+    document.addEventListener('keydown', e => {
+        if (!document.getElementById('playerScreen').classList.contains('active')) return;
+        if (e.key === 'Escape') history.back();
+        if (e.key === ' ') { e.preventDefault(); window.togglePlayPause(); }
+        if (e.key === 'ArrowRight') window.nextEpisode();
+        if (e.key === 'ArrowLeft') window.prevEpisode();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) document.getElementById('mainVideo').pause();
+    });
+
+    init();
+</script>
+</body>
+</html>
