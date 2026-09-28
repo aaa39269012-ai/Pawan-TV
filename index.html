@@ -769,7 +769,6 @@
             color: #fff;
         }
 
-        /* Responsive tweaks */
         @media (max-width: 480px) {
             #epiPanel { max-width: 200px; }
             .epi-num-btn { width: 34px; height: 34px; font-size: 0.76rem; }
@@ -876,7 +875,6 @@
     </div>
 </div>
 
-<!-- Download Progress Screen with Cancel Button -->
 <div id="downloadProgressOverlay">
     <div class="download-progress-box">
         <h3>📥 Downloading...</h3>
@@ -915,7 +913,6 @@ function checkAndForceChrome() {
 
 function detectAdBlockerAndDNS() {
     let baitBlocked = false;
-
     const bait = document.createElement('div');
     bait.innerHTML = '&nbsp;';
     bait.className = 'adsbox adsbygoogle ad-placement doubleclick google-ad';
@@ -934,10 +931,7 @@ function detectAdBlockerAndDNS() {
             baitBlocked = true;
         }
         bait.remove();
-
-        if (baitBlocked) {
-            showAdblockScreen();
-        }
+        if (baitBlocked) showAdblockScreen();
     }, 300);
 }
 
@@ -971,23 +965,17 @@ function showAdblockScreen() {
     let touchStartY = 0, touchStartX = 0;
     let hasLiked = false, viewCounted = false, viewTimer = null;
     let splashHidden = false;
-
-    // Download cancel variables
     let isDownloadCancelled = false;
 
-    // ====================== POINTS & IN-APP VAST AD SYSTEM ======================
-    let userPoints = parseInt(localStorage.getItem('pawanTV_points'));
-    if (isNaN(userPoints)) {
-        userPoints = 5;
-        localStorage.setItem('pawanTV_points', userPoints);
-    }
+    // Fixed default points initialized to 5
+    let userPoints = 5;
+    localStorage.setItem('pawanTV_points', userPoints);
 
     function updatePointsUI() {
         const el = document.getElementById('pointsDisplay');
         if (el) el.textContent = `🪙 ${userPoints} Pts`;
     }
 
-    // In-App VAST Ad Parser & Player
     async function triggerAd(onSuccess, onError) {
         const vastTagUrl = "https://surefootedpause.com/d.mRFFzcdeGGNOvoZQG/Uh/Meamt9/uhZpU/lvkHPxTLcX0jNajUUkwHNzTMcyt_NMzHQ/2UNoT/AK2BMRSUZ_s/afW/1MpKd/DF0Tx_";
         const workerUrl = "https://orange-dust-287a.aaa39269012.workers.dev/?url=" + encodeURIComponent(vastTagUrl);
@@ -995,10 +983,8 @@ function showAdblockScreen() {
         try {
             const response = await fetch(workerUrl);
             const xmlText = await response.text();
-            
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-            
             const mediaFiles = xmlDoc.getElementsByTagName("MediaFile");
             let adVideoUrl = "";
             for (let i = 0; i < mediaFiles.length; i++) {
@@ -1008,18 +994,11 @@ function showAdblockScreen() {
                     break;
                 }
             }
+            if (!adVideoUrl && mediaFiles.length > 0) adVideoUrl = mediaFiles[0].textContent.trim();
 
-            if (!adVideoUrl && mediaFiles.length > 0) {
-                adVideoUrl = mediaFiles[0].textContent.trim();
-            }
-
-            if (adVideoUrl) {
-                playInAppAd(adVideoUrl, onSuccess, onError);
-            } else {
-                onSuccess();
-            }
+            if (adVideoUrl) playInAppAd(adVideoUrl, onSuccess, onError);
+            else onSuccess();
         } catch (e) {
-            console.error("Ad fetch error:", e);
             onSuccess();
         }
     }
@@ -1044,49 +1023,25 @@ function showAdblockScreen() {
 
         const adVid = document.getElementById('inAppAdVideo');
         const timerTxt = document.getElementById('adTimerTxt');
-
-        adVid.play().then(() => {
-            setTimeout(() => { adVid.muted = false; }, 300);
-        }).catch(() => {
-            adVid.muted = true;
-            adVid.play();
-        });
+        adVid.play().then(() => { setTimeout(() => { adVid.muted = false; }, 300); }).catch(() => { adVid.muted = true; adVid.play(); });
         
         let timer = 10;
         const interval = setInterval(() => {
             timer--;
-            if (timer > 0) {
-                timerTxt.textContent = `Ad playing (${timer}s)`;
-            } else {
-                timerTxt.textContent = `Please wait...`;
-                clearInterval(interval);
-            }
+            if (timer > 0) timerTxt.textContent = `Ad playing (${timer}s)`;
+            else { timerTxt.textContent = `Please wait...`; clearInterval(interval); }
         }, 1000);
 
-        adVid.onended = () => {
-            clearInterval(interval);
-            adOverlay.style.display = 'none';
-            adVid.src = '';
-            onSuccess();
-        };
-
-        adVid.onerror = () => {
-            clearInterval(interval);
-            adOverlay.style.display = 'none';
-            adVid.src = '';
-            onSuccess();
-        };
+        adVid.onended = () => { clearInterval(interval); adOverlay.style.display = 'none'; adVid.src = ''; onSuccess(); };
+        adVid.onerror = () => { clearInterval(interval); adOverlay.style.display = 'none'; adVid.src = ''; onSuccess(); };
     }
-    // ==================================================================
 
     function hideSplash() {
         if (splashHidden) return;
         splashHidden = true;
         const loading = document.getElementById('loadingScreen');
         loading.classList.add('hide');
-        setTimeout(() => {
-            loading.style.display = 'none';
-        }, 400);
+        setTimeout(() => { loading.style.display = 'none'; }, 400);
         document.getElementById('homeScreen').style.display = 'block';
     }
 
@@ -1108,13 +1063,10 @@ function showAdblockScreen() {
         checkAndForceChrome();
         detectAdBlockerAndDNS();
         updatePointsUI();
-
         history.replaceState({ screen: 'home' }, '', '');
         setupVideoEvents();
         setupTouchEvents();
-
         setTimeout(hideSplash, 2200);
-
         loadStories();
     }
 
@@ -1123,16 +1075,13 @@ function showAdblockScreen() {
             stories = [];
             snapshot.forEach(d => stories.push({ docId: d.id, ...d.data() }));
             stories.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
             hideSplash();
             renderHome();
-
             if (currentStoryDocId) {
                 const updated = stories.find(s => s.docId === currentStoryDocId);
                 if (updated) { currentStory = updated; updateLikeViewUI(); }
             }
         }, (error) => {
-            console.error("Firebase Error:", error);
             hideSplash();
             renderHome();
         });
@@ -1178,7 +1127,6 @@ function showAdblockScreen() {
         const imgTag = posterSrc
             ? `<img src="${posterSrc}" class="story-poster-user" loading="lazy" alt="" />`
             : `<div class="story-poster-placeholder-user"><span>🎬</span></div>`;
-
         return `
             <div class="story-card-user" onclick="openStory(${idx})">
                 ${imgTag}
@@ -1235,12 +1183,7 @@ function showAdblockScreen() {
         document.getElementById('epiCountBadge').textContent = currentStory.episodes.length;
         updateLikeViewUI();
         
-        if (userPoints <= 0) {
-            checkPointsAndPlay(0);
-        } else {
-            loadEpisode(currentEpiIndex);
-        }
-
+        checkPointsAndPlay(currentEpiIndex);
         buildEpiGrid();
         showOverlay();
         pushState('player');
@@ -1270,7 +1213,9 @@ function showAdblockScreen() {
         const epi = currentStory.episodes[index];
         const video = document.getElementById('mainVideo');
         document.getElementById('videoLoading').classList.add('show');
+        
         video.src = epi.url;
+        
         video.load();
         video.play().catch(() => {});
         document.getElementById('currentEpiTitle').textContent = `Ep ${index + 1}: ${epi.title || ''}`;
@@ -1359,7 +1304,12 @@ function showAdblockScreen() {
     };
 
     function checkPointsAndPlay(targetIndex) {
-        if (targetIndex > 0 && targetIndex % 5 === 0) {
+        if (userPoints > 0) {
+            userPoints -= 1;
+            localStorage.setItem('pawanTV_points', userPoints);
+            updatePointsUI();
+            loadEpisode(targetIndex);
+        } else {
             const video = document.getElementById('mainVideo');
             if (video) video.pause();
 
@@ -1373,27 +1323,6 @@ function showAdblockScreen() {
                 },
                 () => {}
             );
-        } else {
-            if (userPoints > 0) {
-                userPoints -= 1;
-                localStorage.setItem('pawanTV_points', userPoints);
-                updatePointsUI();
-                loadEpisode(targetIndex);
-            } else {
-                const video = document.getElementById('mainVideo');
-                if (video) video.pause();
-
-                triggerAd(
-                    () => {
-                        userPoints += 5;
-                        userPoints -= 1;
-                        localStorage.setItem('pawanTV_points', userPoints);
-                        updatePointsUI();
-                        loadEpisode(targetIndex);
-                    },
-                    () => {}
-                );
-            }
         }
     }
 
@@ -1434,7 +1363,6 @@ function showAdblockScreen() {
         video.addEventListener('error', () => {
             document.getElementById('videoLoading').classList.remove('show');
         });
-
         video.addEventListener('waiting', () => document.getElementById('videoLoading').classList.add('show'));
         video.addEventListener('canplay', () => document.getElementById('videoLoading').classList.remove('show'));
         video.addEventListener('playing', () => {
@@ -1484,10 +1412,8 @@ function showAdblockScreen() {
 
     function buildEpiGrid() {
         if (!currentStory || !currentStory.episodes) return;
-
         const grid = document.getElementById('epiNumberGrid');
         let html = '';
-
         currentStory.episodes.forEach((epi, i) => {
             const isPlaying = i === currentEpiIndex ? 'playing' : '';
             html += `
@@ -1499,7 +1425,6 @@ function showAdblockScreen() {
                 </button>
             `;
         });
-
         grid.innerHTML = html;
     }
 
@@ -1529,25 +1454,21 @@ function showAdblockScreen() {
     }
     window.closeEpiPanelWithHistory = function() { history.back(); };
 
-    // ================= DOWNLOAD BUTTON & BATCH AD LOGIC =================
     window.handleDownloadBatchClick = function() {
         openDownloadModal();
     };
 
     window.openDownloadModal = function() {
         if (!currentStory || !currentStory.episodes || !currentStory.episodes.length) return;
-
         const video = document.getElementById('mainVideo');
         if (video && !video.paused) {
             video.pause();
             document.getElementById('playPauseBtn').textContent = '▶';
         }
-
         const batchListEl = document.getElementById('downloadBatchList');
         const totalEpis = currentStory.episodes.length;
         const batchSize = 5;
         let html = '';
-
         for (let i = 0; i < totalEpis; i += batchSize) {
             const start = i;
             const end = Math.min(i + batchSize, totalEpis);
@@ -1558,7 +1479,6 @@ function showAdblockScreen() {
                 </button>
             `;
         }
-
         batchListEl.innerHTML = html;
         document.getElementById('downloadModal').classList.add('active');
         pushState('downloadModal');
@@ -1570,15 +1490,9 @@ function showAdblockScreen() {
 
     window.handleBatchRangeClick = function(start, end) {
         closeDownloadModal();
-        triggerAd(
-            () => {
-                downloadBatch(start, end);
-            },
-            () => {}
-        );
+        triggerAd(() => { downloadBatch(start, end); }, () => {});
     };
 
-    // ====================== DOWNLOAD WITH WORKER STREAM ======================
     window.cancelDownload = function() {
         isDownloadCancelled = true;
         document.getElementById('downloadProgressOverlay').classList.remove('active');
@@ -1586,22 +1500,18 @@ function showAdblockScreen() {
 
     window.downloadBatch = async function(startIndex, endIndex) {
         if (!currentStory || !currentStory.episodes) return;
-
         const workerBaseUrl = "https://orange-dust-287a.aaa39269012.workers.dev/?url=";
         const batchEpisodes = currentStory.episodes.slice(startIndex, endIndex);
-
         isDownloadCancelled = false;
 
         const overlay = document.getElementById('downloadProgressOverlay');
         const statusTxt = document.getElementById('dlStatusTxt');
         const barFill = document.getElementById('dlBarFill');
         const percentTxt = document.getElementById('dlPercentTxt');
-
         overlay.classList.add('active');
 
         for (let i = 0; i < batchEpisodes.length; i++) {
             if (isDownloadCancelled) break;
-
             const epi = batchEpisodes[i];
             const epiNum = startIndex + i + 1;
             const finalUrl = workerBaseUrl + encodeURIComponent(epi.url);
@@ -1613,7 +1523,6 @@ function showAdblockScreen() {
             try {
                 const response = await fetch(finalUrl);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
                 const reader = response.body.getReader();
                 const contentLength = +response.headers.get('Content-Length') || 0;
 
@@ -1621,16 +1530,11 @@ function showAdblockScreen() {
                 let chunks = [];
 
                 while(true) {
-                    if (isDownloadCancelled) {
-                        reader.cancel();
-                        break;
-                    }
+                    if (isDownloadCancelled) { reader.cancel(); break; }
                     const {done, value} = await reader.read();
                     if (done) break;
-
                     chunks.push(value);
                     receivedLength += value.length;
-
                     if (contentLength > 0) {
                         const percent = Math.round((receivedLength / contentLength) * 100);
                         barFill.style.width = percent + '%';
@@ -1651,15 +1555,10 @@ function showAdblockScreen() {
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
-
                 setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
 
             } catch (error) {
-                if (error.name === "AbortError" || isDownloadCancelled) {
-                    break;
-                }
-                console.error(`Episode ${epiNum} download failed:`, error);
-                
+                if (error.name === "AbortError" || isDownloadCancelled) break;
                 try {
                     const a = document.createElement('a');
                     a.href = finalUrl;
@@ -1668,16 +1567,12 @@ function showAdblockScreen() {
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
-                } catch(err) {
-                    alert(`Episode ${epiNum} download nahi ho paya.`);
-                }
+                } catch(err) {}
             }
         }
-
         overlay.classList.remove('active');
         isDownloadCancelled = false;
     };
-    // ================================================================
 
     document.addEventListener('keydown', e => {
         if (!document.getElementById('playerScreen').classList.contains('active')) return;
