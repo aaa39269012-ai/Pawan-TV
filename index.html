@@ -996,10 +996,15 @@ function showAdblockScreen() {
             }
             if (!adVideoUrl && mediaFiles.length > 0) adVideoUrl = mediaFiles[0].textContent.trim();
 
-            if (adVideoUrl) playInAppAd(adVideoUrl, onSuccess, onError);
-            else onSuccess();
+            // Ad nahi mila to success mat do — points/download block
+            if (adVideoUrl) {
+                playInAppAd(adVideoUrl, onSuccess, onError);
+            } else {
+                if (typeof onError === 'function') onError();
+            }
         } catch (e) {
-            onSuccess();
+            // Network/VAST fail → no reward
+            if (typeof onError === 'function') onError();
         }
     }
 
@@ -1011,29 +1016,74 @@ function showAdblockScreen() {
             adOverlay.style.cssText = 'position:fixed; inset:0; background:#000; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center;';
             adOverlay.innerHTML = `
                 <div style="position:absolute; top:20px; right:20px; color:#fff; background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:20px; font-size:0.85rem; z-index:10;" id="adTimerTxt">Ad playing...</div>
-                <video id="inAppAdVideo" src="${videoUrl}" playsinline webkit-playsinline autoplay muted style="width:100%; height:100%; object-fit:contain;"></video>
+                <video id="inAppAdVideo" playsinline webkit-playsinline style="width:100%; height:100%; object-fit:contain;"></video>
             `;
             document.body.appendChild(adOverlay);
         } else {
-            const v = document.getElementById('inAppAdVideo');
-            v.src = videoUrl;
-            v.muted = true;
             adOverlay.style.display = 'flex';
         }
 
         const adVid = document.getElementById('inAppAdVideo');
         const timerTxt = document.getElementById('adTimerTxt');
-        adVid.play().then(() => { setTimeout(() => { adVid.muted = false; }, 300); }).catch(() => { adVid.muted = true; adVid.play(); });
-        
+        adVid.src = videoUrl;
+        adVid.muted = true;
+
+        let rewarded = false; // prevent double call
         let timer = 10;
-        const interval = setInterval(() => {
+        let interval = null;
+
+        const cleanup = () => {
+            clearInterval(interval);
+            adOverlay.style.display = 'none';
+            adVid.src = '';
+            adVid.onended = null;
+            adVid.onerror = null;
+        };
+
+        const failAd = () => {
+            if (rewarded) return;
+            rewarded = true;
+            cleanup();
+            if (typeof onError === 'function') onError();
+        };
+
+        const succeedAd = () => {
+            if (rewarded) return;
+            rewarded = true;
+            cleanup();
+            if (typeof onSuccess === 'function') onSuccess();
+        };
+
+        interval = setInterval(() => {
             timer--;
             if (timer > 0) timerTxt.textContent = `Ad playing (${timer}s)`;
-            else { timerTxt.textContent = `Please wait...`; clearInterval(interval); }
+            else timerTxt.textContent = `Please wait...`;
         }, 1000);
 
-        adVid.onended = () => { clearInterval(interval); adOverlay.style.display = 'none'; adVid.src = ''; onSuccess(); };
-        adVid.onerror = () => { clearInterval(interval); adOverlay.style.display = 'none'; adVid.src = ''; onSuccess(); };
+        // Only reward when ad actually ends
+        adVid.onended = () => succeedAd();
+        adVid.onerror = () => failAd();
+
+        // Safety: if video never starts playing within 8s → fail
+        const playTimeout = setTimeout(() => {
+            if (adVid.paused || adVid.readyState < 2) {
+                failAd();
+            }
+        }, 8000);
+
+        adVid.play().then(() => {
+            clearTimeout(playTimeout);
+            setTimeout(() => { adVid.muted = false; }, 300);
+        }).catch(() => {
+            // try muted play
+            adVid.muted = true;
+            adVid.play().then(() => {
+                clearTimeout(playTimeout);
+            }).catch(() => {
+                clearTimeout(playTimeout);
+                failAd();
+            });
+        });
     }
 
     function hideSplash() {
@@ -1315,13 +1365,17 @@ function showAdblockScreen() {
 
             triggerAd(
                 () => {
+                    // Ad successfully watched → give points
                     userPoints += 5;
                     userPoints -= 1;
                     localStorage.setItem('pawanTV_points', userPoints);
                     updatePointsUI();
                     loadEpisode(targetIndex);
                 },
-                () => {}
+                () => {
+                    // Ad nahi aaya / fail → points mat do, episode mat chalao
+                    alert('Ad nahi aaya. Points milne ke liye ad dekhna zaroori hai. Phir try karein.');
+                }
             );
         }
     }
@@ -1490,7 +1544,16 @@ function showAdblockScreen() {
 
     window.handleBatchRangeClick = function(start, end) {
         closeDownloadModal();
-        triggerAd(() => { downloadBatch(start, end); }, () => {});
+        triggerAd(
+            () => {
+                // Ad successfully watched → start download
+                downloadBatch(start, end);
+            },
+            () => {
+                // Ad nahi aaya / fail → download mat start karo
+                alert('Ad nahi aaya. Download ke liye ad dekhna zaroori hai. Phir try karein.');
+            }
+        );
     };
 
     window.cancelDownload = function() {
@@ -1510,6 +1573,8 @@ function showAdblockScreen() {
         const percentTxt = document.getElementById('dlPercentTxt');
         overlay.classList.add('active');
 
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
         for (let i = 0; i < batchEpisodes.length; i++) {
             if (isDownloadCancelled) break;
             const epi = batchEpisodes[i];
@@ -1520,6 +1585,8 @@ function showAdblockScreen() {
             barFill.style.width = '0%';
             percentTxt.textContent = '0%';
 
+            let downloadSuccess = false;
+
             try {
                 const response = await fetch(finalUrl);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -1529,9 +1596,9 @@ function showAdblockScreen() {
                 let receivedLength = 0;
                 let chunks = [];
 
-                while(true) {
+                while (true) {
                     if (isDownloadCancelled) { reader.cancel(); break; }
-                    const {done, value} = await reader.read();
+                    const { done, value } = await reader.read();
                     if (done) break;
                     chunks.push(value);
                     receivedLength += value.length;
@@ -1547,27 +1614,52 @@ function showAdblockScreen() {
 
                 if (isDownloadCancelled) break;
 
-                const blob = new Blob(chunks);
+                barFill.style.width = '100%';
+                percentTxt.textContent = '100%';
+                statusTxt.textContent = `Episode ${epiNum} Saving...`;
+
+                const blob = new Blob(chunks, { type: 'video/mp4' });
                 const blobUrl = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = `${currentStory.name || 'Story'}_Episode_${epiNum}.mp4`;
+                a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+                downloadSuccess = true;
 
             } catch (error) {
                 if (error.name === "AbortError" || isDownloadCancelled) break;
+
+                // Fallback: same-tab only (NO new tab)
                 try {
-                    const a = document.createElement('a');
-                    a.href = finalUrl;
-                    a.target = '_blank';
-                    a.download = `${currentStory.name || 'Story'}_Episode_${epiNum}.mp4`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                } catch(err) {}
+                    statusTxt.textContent = `Episode ${epiNum} (fallback)...`;
+                    const response2 = await fetch(finalUrl);
+                    if (!response2.ok) throw new Error('Fallback fetch failed');
+                    const blob2 = await response2.blob();
+                    const blobUrl2 = URL.createObjectURL(blob2);
+                    const a2 = document.createElement('a');
+                    a2.href = blobUrl2;
+                    a2.download = `${currentStory.name || 'Story'}_Episode_${epiNum}.mp4`;
+                    a2.style.display = 'none';
+                    document.body.appendChild(a2);
+                    a2.click();
+                    a2.remove();
+                    setTimeout(() => URL.revokeObjectURL(blobUrl2), 30000);
+                    barFill.style.width = '100%';
+                    percentTxt.textContent = '100%';
+                    downloadSuccess = true;
+                } catch (err2) {
+                    statusTxt.textContent = `Episode ${epiNum} failed. Skipping...`;
+                    await wait(1200);
+                }
+            }
+
+            if (downloadSuccess && !isDownloadCancelled) {
+                statusTxt.textContent = `Episode ${epiNum} Done ✓  Next starting...`;
+                await wait(1500);
             }
         }
         overlay.classList.remove('active');
