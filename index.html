@@ -824,7 +824,7 @@
             <div class="player-top">
                 <button class="btn-back-player" onclick="handleBackBtn()">←</button>
                 <div class="player-story-title" id="playerTitle">Story Name</div>
-                <button class="btn-download-player" onclick="openDownloadModal()">📥</button>
+                <button class="btn-download-player" onclick="handleDownloadBatchClick()">📥</button>
                 <button class="btn-epi-list" onclick="openEpiPanel()">🎬<span class="epi-count-badge" id="epiCountBadge">1</span></button>
             </div>
             <div class="center-controls">
@@ -974,12 +974,11 @@ function showAdblockScreen() {
 
     // Download cancel variables
     let isDownloadCancelled = false;
-    let currentXhr = null;
 
-    // ====================== POINTS & ADS SYSTEM ======================
+    // ====================== POINTS & IN-APP VAST AD SYSTEM ======================
     let userPoints = parseInt(localStorage.getItem('pawanTV_points'));
     if (isNaN(userPoints)) {
-        userPoints = 5; // Default 5 points free
+        userPoints = 5;
         localStorage.setItem('pawanTV_points', userPoints);
     }
 
@@ -988,24 +987,95 @@ function showAdblockScreen() {
         if (el) el.textContent = `🪙 ${userPoints} Pts`;
     }
 
-    function triggerAd(onSuccess, onError) {
-        // Yahan apna Ad Script Call Karein (Monetag / AdMob / Adsterra Rewarded Ad)
-        // Check agar ad script available hai
-        if (window.show_8923483) { // Example Monetag trigger check
-            window.show_8923483().then(() => {
-                onSuccess();
-            }).catch(() => {
-                onError();
-            });
-        } else {
-            // Simulated Success - (Ad network SDK integration hone par real ad dikhega)
-            const adSuccess = confirm("Aage ke episodes dekhne ke liye Ad dekhein. (OK = Ad Finished, Cancel = Failed)");
-            if (adSuccess) {
-                onSuccess();
-            } else {
-                onError();
+    // In-App VAST Ad Parser & Player
+    async function triggerAd(onSuccess, onError) {
+        const vastTagUrl = "https://surefootedpause.com/d.mRFFzcdeGGNOvoZQG/Uh/Meamt9/uhZpU/lvkHPxTLcX0jNajUUkwHNzTMcyt_NMzHQ/2UNoT/AK2BMRSUZ_s/afW/1MpKd/DF0Tx_";
+        const workerUrl = "https://orange-dust-287a.aaa39269012.workers.dev/?url=" + encodeURIComponent(vastTagUrl);
+
+        try {
+            const response = await fetch(workerUrl);
+            const xmlText = await response.text();
+            
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+            
+            const mediaFiles = xmlDoc.getElementsByTagName("MediaFile");
+            let adVideoUrl = "";
+            for (let i = 0; i < mediaFiles.length; i++) {
+                const type = mediaFiles[i].getAttribute("type");
+                if (type && type.includes("video/mp4")) {
+                    adVideoUrl = mediaFiles[i].textContent.trim();
+                    break;
+                }
             }
+
+            if (!adVideoUrl && mediaFiles.length > 0) {
+                adVideoUrl = mediaFiles[0].textContent.trim();
+            }
+
+            if (adVideoUrl) {
+                playInAppAd(adVideoUrl, onSuccess, onError);
+            } else {
+                onSuccess();
+            }
+        } catch (e) {
+            console.error("Ad fetch error:", e);
+            onSuccess();
         }
+    }
+
+    function playInAppAd(videoUrl, onSuccess, onError) {
+        let adOverlay = document.getElementById('inAppAdOverlay');
+        if (!adOverlay) {
+            adOverlay = document.createElement('div');
+            adOverlay.id = 'inAppAdOverlay';
+            adOverlay.style.cssText = 'position:fixed; inset:0; background:#000; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center;';
+            adOverlay.innerHTML = `
+                <div style="position:absolute; top:20px; right:20px; color:#fff; background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:20px; font-size:0.85rem; z-index:10;" id="adTimerTxt">Ad playing...</div>
+                <video id="inAppAdVideo" src="${videoUrl}" playsinline webkit-playsinline autoplay muted style="width:100%; height:100%; object-fit:contain;"></video>
+            `;
+            document.body.appendChild(adOverlay);
+        } else {
+            const v = document.getElementById('inAppAdVideo');
+            v.src = videoUrl;
+            v.muted = true;
+            adOverlay.style.display = 'flex';
+        }
+
+        const adVid = document.getElementById('inAppAdVideo');
+        const timerTxt = document.getElementById('adTimerTxt');
+
+        adVid.play().then(() => {
+            setTimeout(() => { adVid.muted = false; }, 300);
+        }).catch(() => {
+            adVid.muted = true;
+            adVid.play();
+        });
+        
+        let timer = 10;
+        const interval = setInterval(() => {
+            timer--;
+            if (timer > 0) {
+                timerTxt.textContent = `Ad playing (${timer}s)`;
+            } else {
+                timerTxt.textContent = `Please wait...`;
+                clearInterval(interval);
+            }
+        }, 1000);
+
+        adVid.onended = () => {
+            clearInterval(interval);
+            adOverlay.style.display = 'none';
+            adVid.src = '';
+            onSuccess();
+        };
+
+        adVid.onerror = () => {
+            clearInterval(interval);
+            adOverlay.style.display = 'none';
+            adVid.src = '';
+            onSuccess();
+        };
     }
     // ==================================================================
 
@@ -1165,7 +1235,6 @@ function showAdblockScreen() {
         document.getElementById('epiCountBadge').textContent = currentStory.episodes.length;
         updateLikeViewUI();
         
-        // Open playing episode without deducting on initial open if already having points
         if (userPoints <= 0) {
             checkPointsAndPlay(0);
         } else {
@@ -1289,56 +1358,44 @@ function showAdblockScreen() {
         }
     };
 
-    // ================= POINTS CHECK & LOAD LOGIC =================
     function checkPointsAndPlay(targetIndex) {
-        // Har 5th episode par Ad offer
         if (targetIndex > 0 && targetIndex % 5 === 0) {
             const video = document.getElementById('mainVideo');
             if (video) video.pause();
 
             triggerAd(
-                () => { // Ad Success
-                    userPoints += 5; // 5 Points Add
-                    userPoints -= 1; // 1 Point deducted for watching this episode
+                () => {
+                    userPoints += 5;
+                    userPoints -= 1;
                     localStorage.setItem('pawanTV_points', userPoints);
                     updatePointsUI();
-                    alert("🎉 Ad dekhne ke liye 5 Points mile! Ep unlock ho gaya.");
                     loadEpisode(targetIndex);
                 },
-                () => { // Ad Failed / Cancelled
-                    alert("⚠️ Ad poora nahi hua. Points add nahi ho paye!");
-                }
+                () => {}
             );
         } else {
-            // Normal Episode logic
             if (userPoints > 0) {
-                userPoints -= 1; // 1 Point Minus
+                userPoints -= 1;
                 localStorage.setItem('pawanTV_points', userPoints);
                 updatePointsUI();
                 loadEpisode(targetIndex);
             } else {
-                // Points khatam ho gaye
                 const video = document.getElementById('mainVideo');
                 if (video) video.pause();
 
-                alert("🔒 Aapke Points khatam ho gaye hain! Points add karne ke liye Ad dekhein.");
                 triggerAd(
-                    () => { // Ad Success
-                        userPoints += 5; // 5 Points Add
-                        userPoints -= 1; // 1 Point Deducted
+                    () => {
+                        userPoints += 5;
+                        userPoints -= 1;
                         localStorage.setItem('pawanTV_points', userPoints);
                         updatePointsUI();
-                        alert("🎉 5 Points add ho gaye!");
                         loadEpisode(targetIndex);
                     },
-                    () => { // Ad Failed
-                        alert("⚠️ Ad nahi dekha gaya. Episode unlocked nahi hua!");
-                    }
+                    () => {}
                 );
             }
         }
     }
-    // =============================================================
 
     function startAutoNext() {
         if (!currentStory || currentEpiIndex >= currentStory.episodes.length - 1) return;
@@ -1472,6 +1529,11 @@ function showAdblockScreen() {
     }
     window.closeEpiPanelWithHistory = function() { history.back(); };
 
+    // ================= DOWNLOAD BUTTON & BATCH AD LOGIC =================
+    window.handleDownloadBatchClick = function() {
+        openDownloadModal();
+    };
+
     window.openDownloadModal = function() {
         if (!currentStory || !currentStory.episodes || !currentStory.episodes.length) return;
 
@@ -1490,7 +1552,7 @@ function showAdblockScreen() {
             const start = i;
             const end = Math.min(i + batchSize, totalEpis);
             html += `
-                <button onclick="downloadBatch(${start}, ${end})" class="download-batch-btn">
+                <button onclick="handleBatchRangeClick(${start}, ${end})" class="download-batch-btn">
                     <span>Epi ${start + 1} to ${end}</span>
                     <span>⬇️</span>
                 </button>
@@ -1506,34 +1568,29 @@ function showAdblockScreen() {
         document.getElementById('downloadModal').classList.remove('active');
     };
 
-    // ====================== DOWNLOAD WITH CANCEL ======================
+    window.handleBatchRangeClick = function(start, end) {
+        closeDownloadModal();
+        triggerAd(
+            () => {
+                downloadBatch(start, end);
+            },
+            () => {}
+        );
+    };
+
+    // ====================== DOWNLOAD WITH WORKER STREAM ======================
     window.cancelDownload = function() {
         isDownloadCancelled = true;
-        if (currentXhr) {
-            currentXhr.abort();
-            currentXhr = null;
-        }
         document.getElementById('downloadProgressOverlay').classList.remove('active');
-        alert('Download cancel ho gaya!');
     };
 
     window.downloadBatch = async function(startIndex, endIndex) {
         if (!currentStory || !currentStory.episodes) return;
 
-        const video = document.getElementById('mainVideo');
-        if (video && !video.paused) {
-            video.pause();
-            document.getElementById('playPauseBtn').textContent = '▶';
-        }
-
         const workerBaseUrl = "https://orange-dust-287a.aaa39269012.workers.dev/?url=";
         const batchEpisodes = currentStory.episodes.slice(startIndex, endIndex);
 
-        closeDownloadModal();
-
-        // Reset cancel flag
         isDownloadCancelled = false;
-        currentXhr = null;
 
         const overlay = document.getElementById('downloadProgressOverlay');
         const statusTxt = document.getElementById('dlStatusTxt');
@@ -1543,7 +1600,7 @@ function showAdblockScreen() {
         overlay.classList.add('active');
 
         for (let i = 0; i < batchEpisodes.length; i++) {
-            if (isDownloadCancelled) break;   // Stop if cancelled
+            if (isDownloadCancelled) break;
 
             const epi = batchEpisodes[i];
             const epiNum = startIndex + i + 1;
@@ -1554,44 +1611,39 @@ function showAdblockScreen() {
             percentTxt.textContent = '0%';
 
             try {
-                const blob = await new Promise((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    currentXhr = xhr;   // Store current XHR so we can abort it
+                const response = await fetch(finalUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const reader = response.body.getReader();
+                const contentLength = +response.headers.get('Content-Length') || 0;
 
-                    xhr.open('GET', finalUrl, true);
-                    xhr.responseType = 'blob';
+                let receivedLength = 0;
+                let chunks = [];
 
-                    xhr.onprogress = (event) => {
-                        if (event.lengthComputable && !isDownloadCancelled) {
-                            const percent = Math.round((event.loaded / event.total) * 100);
-                            barFill.style.width = percent + '%';
-                            percentTxt.textContent = percent + '%';
-                        }
-                    };
+                while(true) {
+                    if (isDownloadCancelled) {
+                        reader.cancel();
+                        break;
+                    }
+                    const {done, value} = await reader.read();
+                    if (done) break;
 
-                    xhr.onload = () => {
-                        if (isDownloadCancelled) {
-                            reject(new Error("Cancelled"));
-                            return;
-                        }
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            resolve(xhr.response);
-                        } else {
-                            reject(new Error(`HTTP Error ${xhr.status}`));
-                        }
-                    };
+                    chunks.push(value);
+                    receivedLength += value.length;
 
-                    xhr.onerror = () => reject(new Error("Network Error"));
-                    xhr.onabort = () => reject(new Error("Cancelled"));
-                    xhr.send();
-                });
+                    if (contentLength > 0) {
+                        const percent = Math.round((receivedLength / contentLength) * 100);
+                        barFill.style.width = percent + '%';
+                        percentTxt.textContent = percent + '%';
+                    } else {
+                        barFill.style.width = '50%';
+                        percentTxt.textContent = 'Downloading...';
+                    }
+                }
 
                 if (isDownloadCancelled) break;
 
-                if (blob.size === 0) {
-                    throw new Error("Downloaded file is empty");
-                }
-
+                const blob = new Blob(chunks);
                 const blobUrl = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = blobUrl;
@@ -1603,17 +1655,26 @@ function showAdblockScreen() {
                 setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
 
             } catch (error) {
-                if (error.message === "Cancelled" || isDownloadCancelled) {
+                if (error.name === "AbortError" || isDownloadCancelled) {
                     break;
                 }
                 console.error(`Episode ${epiNum} download failed:`, error);
-                alert(`Episode ${epiNum} download nahi ho paya.`);
+                
+                try {
+                    const a = document.createElement('a');
+                    a.href = finalUrl;
+                    a.target = '_blank';
+                    a.download = `${currentStory.name || 'Story'}_Episode_${epiNum}.mp4`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } catch(err) {
+                    alert(`Episode ${epiNum} download nahi ho paya.`);
+                }
             }
         }
 
-        // Hide overlay
         overlay.classList.remove('active');
-        currentXhr = null;
         isDownloadCancelled = false;
     };
     // ================================================================
