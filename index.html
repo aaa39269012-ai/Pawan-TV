@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Pawan TV par apne favorite short drama  videos dekhen aur
     <title>Pawan TV</title>
     <style>
         :root {
@@ -968,8 +967,10 @@ function showAdblockScreen() {
     let splashHidden = false;
     let isDownloadCancelled = false;
 
-    // Fixed default points initialized to 5
-    let userPoints = 5;
+    // Points maximum 5
+    let userPoints = localStorage.getItem('pawanTV_points') !== null 
+        ? Math.min(5, parseInt(localStorage.getItem('pawanTV_points')) || 0) 
+        : 5;
     localStorage.setItem('pawanTV_points', userPoints);
 
     function updatePointsUI() {
@@ -977,7 +978,12 @@ function showAdblockScreen() {
         if (el) el.textContent = `🪙 ${userPoints} Pts`;
     }
 
-    async function triggerAd(onSuccess, onError) {
+    let cachedAdData = null;
+    let isFetchingAd = false;
+
+    async function preloadAd() {
+        if (cachedAdData || isFetchingAd) return;
+        isFetchingAd = true;
         const vastTagUrl = "https://surefootedpause.com/d.mRFFzcdeGGNOvoZQG/Uh/Meamt9/uhZpU/lvkHPxTLcX0jNajUUkwHNzTMcyt_NMzHQ/2UNoT/AK2BMRSUZ_s/afW/1MpKd/DF0Tx_";
         const workerUrl = "https://orange-dust-287a.aaa39269012.workers.dev/?url=" + encodeURIComponent(vastTagUrl);
 
@@ -997,48 +1003,67 @@ function showAdblockScreen() {
             }
             if (!adVideoUrl && mediaFiles.length > 0) adVideoUrl = mediaFiles[0].textContent.trim();
 
-            // Ad nahi mila to success mat do — points/download block
+            let clickUrl = "";
+            const clickThroughs = xmlDoc.getElementsByTagName("ClickThrough");
+            if (clickThroughs.length > 0) {
+                clickUrl = (clickThroughs[0].textContent || "").trim();
+            }
+
             if (adVideoUrl) {
-                playInAppAd(adVideoUrl, onSuccess, onError);
-            } else {
-                if (typeof onError === 'function') onError();
+                cachedAdData = { adVideoUrl, clickUrl };
             }
         } catch (e) {
-            // Network/VAST fail → no reward
+            console.log("Preload failed", e);
+        } finally {
+            isFetchingAd = false;
+        }
+    }
+
+    async function triggerAd(onSuccess, onError) {
+        if (!cachedAdData) {
+            await preloadAd();
+        }
+
+        if (cachedAdData) {
+            const { adVideoUrl, clickUrl } = cachedAdData;
+            cachedAdData = null;
+            preloadAd();
+            playInAppAd(adVideoUrl, clickUrl, onSuccess, onError);
+        } else {
             if (typeof onError === 'function') onError();
         }
     }
 
-    function playInAppAd(videoUrl, onSuccess, onError) {
+    function playInAppAd(videoUrl, clickUrl, onSuccess, onError) {
         let adOverlay = document.getElementById('inAppAdOverlay');
         if (!adOverlay) {
             adOverlay = document.createElement('div');
             adOverlay.id = 'inAppAdOverlay';
-            adOverlay.style.cssText = 'position:fixed; inset:0; background:#000; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center;';
+            adOverlay.style.cssText = 'position:fixed; inset:0; background:#000; z-index:999999; display:flex; align-items:center; justify-content:center; cursor:pointer;';
             adOverlay.innerHTML = `
-                <div style="position:absolute; top:20px; right:20px; color:#fff; background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:20px; font-size:0.85rem; z-index:10;" id="adTimerTxt">Ad playing...</div>
-                <video id="inAppAdVideo" playsinline webkit-playsinline style="width:100%; height:100%; object-fit:contain;"></video>
+                <video id="inAppAdVideo" playsinline webkit-playsinline style="width:100%; height:100%; object-fit:contain; cursor:pointer; pointer-events:auto;"></video>
             `;
             document.body.appendChild(adOverlay);
         } else {
             adOverlay.style.display = 'flex';
+            adOverlay.style.cursor = 'pointer';
         }
 
         const adVid = document.getElementById('inAppAdVideo');
-        const timerTxt = document.getElementById('adTimerTxt');
         adVid.src = videoUrl;
         adVid.muted = true;
+        adVid.style.cursor = 'pointer';
+        adVid.style.pointerEvents = 'auto';
 
-        let rewarded = false; // prevent double call
-        let timer = 10;
-        let interval = null;
+        let rewarded = false;
 
         const cleanup = () => {
-            clearInterval(interval);
             adOverlay.style.display = 'none';
             adVid.src = '';
             adVid.onended = null;
             adVid.onerror = null;
+            adVid.onclick = null;
+            adOverlay.onclick = null;
         };
 
         const failAd = () => {
@@ -1055,17 +1080,19 @@ function showAdblockScreen() {
             if (typeof onSuccess === 'function') onSuccess();
         };
 
-        interval = setInterval(() => {
-            timer--;
-            if (timer > 0) timerTxt.textContent = `Ad playing (${timer}s)`;
-            else timerTxt.textContent = `Please wait...`;
-        }, 1000);
+        const handleAdClick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (clickUrl) {
+                window.open(clickUrl, '_blank', 'noopener,noreferrer');
+            }
+        };
+        adVid.onclick = handleAdClick;
+        adOverlay.onclick = handleAdClick;
 
-        // Only reward when ad actually ends
         adVid.onended = () => succeedAd();
         adVid.onerror = () => failAd();
 
-        // Safety: if video never starts playing within 8s → fail
         const playTimeout = setTimeout(() => {
             if (adVid.paused || adVid.readyState < 2) {
                 failAd();
@@ -1076,7 +1103,6 @@ function showAdblockScreen() {
             clearTimeout(playTimeout);
             setTimeout(() => { adVid.muted = false; }, 300);
         }).catch(() => {
-            // try muted play
             adVid.muted = true;
             adVid.play().then(() => {
                 clearTimeout(playTimeout);
@@ -1119,6 +1145,7 @@ function showAdblockScreen() {
         setupTouchEvents();
         setTimeout(hideSplash, 2200);
         loadStories();
+        preloadAd();
     }
 
     function loadStories() {
@@ -1128,6 +1155,21 @@ function showAdblockScreen() {
             stories.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
             hideSplash();
             renderHome();
+
+            // Auto Restore Last State agar ad click par APK restart ho jaye
+            const savedPlayback = JSON.parse(localStorage.getItem('pawanTV_lastPlayback') || 'null');
+            if (savedPlayback && !currentStoryDocId) {
+                const storyIdx = stories.findIndex(s => s.docId === savedPlayback.docId);
+                if (storyIdx !== -1) {
+                    currentStory = stories[storyIdx];
+                    currentStoryDocId = currentStory.docId;
+                    currentEpiIndex = savedPlayback.epiIndex || 0;
+                    localStorage.removeItem('pawanTV_lastPlayback');
+                    openPlayer(savedPlayback.time || 0);
+                    return;
+                }
+            }
+
             if (currentStoryDocId) {
                 const updated = stories.find(s => s.docId === currentStoryDocId);
                 if (updated) { currentStory = updated; updateLikeViewUI(); }
@@ -1223,10 +1265,10 @@ function showAdblockScreen() {
         currentEpiIndex = 0;
         hasLiked = getLikedStatus(currentStoryDocId);
         viewCounted = false;
-        openPlayer();
+        openPlayer(0);
     };
 
-    function openPlayer() {
+    function openPlayer(restoreTime = 0) {
         if (!currentStory || !currentStory.episodes || !currentStory.episodes.length) return;
         document.getElementById('playerScreen').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -1234,7 +1276,7 @@ function showAdblockScreen() {
         document.getElementById('epiCountBadge').textContent = currentStory.episodes.length;
         updateLikeViewUI();
         
-        checkPointsAndPlay(currentEpiIndex);
+        checkPointsAndPlay(currentEpiIndex, restoreTime);
         buildEpiGrid();
         showOverlay();
         pushState('player');
@@ -1248,6 +1290,8 @@ function showAdblockScreen() {
         video.src = '';
         document.getElementById('playerScreen').classList.remove('active');
         document.body.style.overflow = '';
+        localStorage.removeItem('pawanTV_lastPlayback');
+        currentStoryDocId = null;
         clearTimers();
         closeEpiPanel();
         closeDownloadModal();
@@ -1255,7 +1299,7 @@ function showAdblockScreen() {
         updatePointsUI();
     }
 
-    function loadEpisode(index) {
+    function loadEpisode(index, restoreTime = 0) {
         if (!currentStory) return;
         if (index < 0) index = 0;
         if (index >= currentStory.episodes.length) return;
@@ -1266,8 +1310,16 @@ function showAdblockScreen() {
         document.getElementById('videoLoading').classList.add('show');
         
         video.src = epi.url;
-        
         video.load();
+
+        if (restoreTime > 0) {
+            const onMeta = () => {
+                video.currentTime = restoreTime;
+                video.removeEventListener('loadedmetadata', onMeta);
+            };
+            video.addEventListener('loadedmetadata', onMeta);
+        }
+
         video.play().catch(() => {});
         document.getElementById('currentEpiTitle').textContent = `Ep ${index + 1}: ${epi.title || ''}`;
         document.getElementById('playPauseBtn').textContent = '⏸';
@@ -1345,36 +1397,34 @@ function showAdblockScreen() {
     };
 
     window.prevEpisode = function() {
-        if (currentEpiIndex > 0) checkPointsAndPlay(currentEpiIndex - 1);
+        if (currentEpiIndex > 0) checkPointsAndPlay(currentEpiIndex - 1, 0);
     };
 
     window.nextEpisode = function() {
         if (currentStory && currentEpiIndex < currentStory.episodes.length - 1) {
-            checkPointsAndPlay(currentEpiIndex + 1);
+            checkPointsAndPlay(currentEpiIndex + 1, 0);
         }
     };
 
-    function checkPointsAndPlay(targetIndex) {
+    function checkPointsAndPlay(targetIndex, restoreTime = 0) {
         if (userPoints > 0) {
             userPoints -= 1;
             localStorage.setItem('pawanTV_points', userPoints);
             updatePointsUI();
-            loadEpisode(targetIndex);
+            loadEpisode(targetIndex, restoreTime);
         } else {
             const video = document.getElementById('mainVideo');
             if (video) video.pause();
 
             triggerAd(
                 () => {
-                    // Ad successfully watched → give points
-                    userPoints += 5;
+                    userPoints = Math.min(5, userPoints + 5);
                     userPoints -= 1;
                     localStorage.setItem('pawanTV_points', userPoints);
                     updatePointsUI();
-                    loadEpisode(targetIndex);
+                    loadEpisode(targetIndex, restoreTime);
                 },
                 () => {
-                    // Ad nahi aaya / fail → points mat do, episode mat chalao
                     alert('Ad nahi aaya. Points milne ke liye ad dekhna zaroori hai. Phir try karein.');
                 }
             );
@@ -1428,9 +1478,21 @@ function showAdblockScreen() {
         video.addEventListener('timeupdate', () => {
             if (video.duration) {
                 document.getElementById('progressFill').style.width = ((video.currentTime / video.duration) * 100) + '%';
+                
+                // Playback state save karein (Ad click par restart hone par auto-resume hoga)
+                if (currentStoryDocId && !video.paused && video.currentTime > 2) {
+                    localStorage.setItem('pawanTV_lastPlayback', JSON.stringify({
+                        docId: currentStoryDocId,
+                        epiIndex: currentEpiIndex,
+                        time: video.currentTime
+                    }));
+                }
             }
         });
-        video.addEventListener('ended', () => startAutoNext());
+        video.addEventListener('ended', () => {
+            localStorage.removeItem('pawanTV_lastPlayback');
+            startAutoNext();
+        });
     }
 
     window.seekVideo = function(e) {
@@ -1488,7 +1550,7 @@ function showAdblockScreen() {
     }
 
     window.selectEpisode = function(index) {
-        checkPointsAndPlay(index);
+        checkPointsAndPlay(index, 0);
         history.back();
     };
 
@@ -1547,11 +1609,9 @@ function showAdblockScreen() {
         closeDownloadModal();
         triggerAd(
             () => {
-                // Ad successfully watched → start download
                 downloadBatch(start, end);
             },
             () => {
-                // Ad nahi aaya / fail → download mat start karo
                 alert('Ad nahi aaya. Download ke liye ad dekhna zaroori hai. Phir try karein.');
             }
         );
@@ -1634,7 +1694,6 @@ function showAdblockScreen() {
             } catch (error) {
                 if (error.name === "AbortError" || isDownloadCancelled) break;
 
-                // Fallback: same-tab only (NO new tab)
                 try {
                     statusTxt.textContent = `Episode ${epiNum} (fallback)...`;
                     const response2 = await fetch(finalUrl);
