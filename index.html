@@ -944,7 +944,7 @@ function showAdblockScreen() {
     const db = getFirestore(app);
 
     const SECRET_KEY = "PawanTV_SuperSecretKey_2026";
-    const WORKER_BASE = "https://sorry.aaa39269012.workers.dev/";
+    const WORKER_BASE = "https://sorryt-a7c9.aaa39269012.workers.dev/";
 
     async function generateSecureProxyUrl(storyId, epiIndex) {
         const exp = Date.now() + (3 * 60 * 1000); // 3 minutes expiry
@@ -985,58 +985,66 @@ function showAdblockScreen() {
 
     let cachedAdData = null;
     let isFetchingAd = false;
+    const adTagUrls = [
+        "https://surefootedpause.com/d.mRFFzcdeGGNOvoZQG/Uh/Meamt9/uhZpU/lvkHPxTLcX0jNajUUkwHNzTMcyt_NMzHQ/2UNoT/AK2BMRSUZ_s/afW/1MpKd/DF0Tx_"
+    ];
 
     async function preloadAd() {
         if (cachedAdData || isFetchingAd) return;
         isFetchingAd = true;
-        const vastTagUrl = "https://surefootedpause.com/d.mRFFzcdeGGNOvoZQG/Uh/Meamt9/uhZpU/lvkHPxTLcX0jNajUUkwHNzTMcyt_NMzHQ/2UNoT/AK2BMRSUZ_s/afW/1MpKd/DF0Tx_";
-        
-        // Ad fetch ke liye temporary token / direct call
-        const exp = Date.now() + (3 * 60 * 1000);
-        const dataToSign = `ad-fetch-0-${exp}-${SECRET_KEY}`;
-        const encoder = new TextEncoder();
-        const keyData = encoder.encode(SECRET_KEY);
-        const msgData = encoder.encode(dataToSign);
-        const cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-        const sigBuf = await crypto.subtle.sign("HMAC", cryptoKey, msgData);
-        const signature = Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
-        
-        const workerUrl = `${WORKER_BASE}?url=` + encodeURIComponent(vastTagUrl) + `&exp=${exp}&sig=${signature}`;
 
-        try {
-            const response = await fetch(workerUrl);
-            const xmlText = await response.text();
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-            const mediaFiles = xmlDoc.getElementsByTagName("MediaFile");
-            let adVideoUrl = "";
-            for (let i = 0; i < mediaFiles.length; i++) {
-                const type = mediaFiles[i].getAttribute("type");
-                if (type && type.includes("video/mp4")) {
-                    adVideoUrl = mediaFiles[i].textContent.trim();
+        for (let tagUrl of adTagUrls) {
+            try {
+                const exp = Date.now() + (3 * 60 * 1000);
+                const dataToSign = `ad-fetch-0-${exp}-${SECRET_KEY}`;
+                const encoder = new TextEncoder();
+                const keyData = encoder.encode(SECRET_KEY);
+                const msgData = encoder.encode(dataToSign);
+                const cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+                const sigBuf = await crypto.subtle.sign("HMAC", cryptoKey, msgData);
+                const signature = Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+                
+                const workerUrl = `${WORKER_BASE}?url=` + encodeURIComponent(tagUrl) + `&exp=${exp}&sig=${signature}`;
+
+                const response = await fetch(workerUrl);
+                if (!response.ok) continue;
+
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                const mediaFiles = xmlDoc.getElementsByTagName("MediaFile");
+                
+                let adVideoUrl = "";
+                for (let i = 0; i < mediaFiles.length; i++) {
+                    const type = mediaFiles[i].getAttribute("type");
+                    if (type && type.includes("video/mp4")) {
+                        adVideoUrl = mediaFiles[i].textContent.trim();
+                        break;
+                    }
+                }
+                if (!adVideoUrl && mediaFiles.length > 0) adVideoUrl = mediaFiles[0].textContent.trim();
+
+                let clickUrl = "";
+                const clickThroughs = xmlDoc.getElementsByTagName("ClickThrough");
+                if (clickThroughs.length > 0) {
+                    clickUrl = (clickThroughs[0].textContent || "").trim();
+                }
+
+                if (adVideoUrl) {
+                    cachedAdData = { adVideoUrl, clickUrl };
                     break;
                 }
+            } catch (e) {
+                console.log("Ad preload failed, retrying...", e);
             }
-            if (!adVideoUrl && mediaFiles.length > 0) adVideoUrl = mediaFiles[0].textContent.trim();
-
-            let clickUrl = "";
-            const clickThroughs = xmlDoc.getElementsByTagName("ClickThrough");
-            if (clickThroughs.length > 0) {
-                clickUrl = (clickThroughs[0].textContent || "").trim();
-            }
-
-            if (adVideoUrl) {
-                cachedAdData = { adVideoUrl, clickUrl };
-            }
-        } catch (e) {
-            console.log("Preload failed", e);
-        } finally {
-            isFetchingAd = false;
         }
+        isFetchingAd = false;
     }
 
     async function triggerAd(onSuccess, onError) {
         if (!cachedAdData) {
+            const statusEl = document.getElementById('loadingStatusText');
+            if(statusEl) statusEl.textContent = "Loading Ad...";
             await preloadAd();
         }
 
@@ -1046,7 +1054,17 @@ function showAdblockScreen() {
             preloadAd();
             playInAppAd(adVideoUrl, clickUrl, onSuccess, onError);
         } else {
-            if (typeof onError === 'function') onError();
+            setTimeout(async () => {
+                await preloadAd();
+                if (cachedAdData) {
+                    const { adVideoUrl, clickUrl } = cachedAdData;
+                    cachedAdData = null;
+                    playInAppAd(adVideoUrl, clickUrl, onSuccess, onError);
+                } else {
+                    alert('Ad load nahi ho paya. Kripya apna Ad Blocker / Private DNS band karein aur page refresh karke dobara koshish karein.');
+                    if (typeof onError === 'function') onError();
+                }
+            }, 1000);
         }
     }
 
@@ -1311,7 +1329,6 @@ function showAdblockScreen() {
         const video = document.getElementById('mainVideo');
         document.getElementById('videoLoading').classList.add('show');
         
-        // Secure Tokenized Worker URL generate karein (Archive link completely hidden)
         const workerProxyUrl = await generateSecureProxyUrl(currentStoryDocId, index);
         
         video.src = workerProxyUrl;
@@ -1429,9 +1446,7 @@ function showAdblockScreen() {
                     updatePointsUI();
                     loadEpisode(targetIndex, restoreTime);
                 },
-                () => {
-                    alert('Ad nahi aaya. Points milne ke liye ad dekhna zaroori hai. Phir try karein.');
-                }
+                () => {}
             );
         }
     }
@@ -1626,12 +1641,8 @@ function showAdblockScreen() {
     window.handleBatchRangeClick = function(start, end) {
         closeDownloadModal();
         triggerAd(
-            () => {
-                downloadBatch(start, end);
-            },
-            () => {
-                alert('Ad nahi aaya. Download ke liye ad dekhna zaroori hai. Phir try karein.');
-            }
+            () => { downloadBatch(start, end); },
+            () => {}
         );
     };
 
@@ -1658,7 +1669,6 @@ function showAdblockScreen() {
             const epiNum = startIndex + i + 1;
             const actualIndex = startIndex + i;
             
-            // Download ke waqt bhi fresh tokenized proxy URL generate hoga
             const finalUrl = await generateSecureProxyUrl(currentStoryDocId, actualIndex);
 
             statusTxt.textContent = `Episode ${epiNum} of ${endIndex} Downloading...`;
