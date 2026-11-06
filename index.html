@@ -752,6 +752,55 @@
             .stories-grid-user { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
             .story-poster-user, .story-poster-placeholder-user { height: 132px; }
         }
+
+        /* Short-drama player */
+        #playerScreen { background:#08080b; }
+        .video-wrapper { max-width:540px; width:100%; margin:auto; height:100%; }
+        #mainVideo { object-fit:contain; }
+        .player-overlay { opacity:1; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,.5),transparent 22%,transparent 56%,rgba(0,0,0,.85)); }
+        .player-overlay.visible { pointer-events:none; }
+        .player-overlay button, .player-overlay .video-progress { pointer-events:auto; }
+        .player-top { padding:calc(12px + env(safe-area-inset-top)) 16px 30px; background:none; }
+        .player-story-title { text-align:left; font-size:1rem; }
+        .btn-back-player,.btn-download-player,.btn-epi-list { background:rgba(20,20,24,.48); width:40px; height:40px; }
+        .center-controls { opacity:0; pointer-events:none; transition:opacity .2s; }
+        .player-overlay.visible .center-controls { opacity:1; }
+        .center-controls button { pointer-events:none; }
+        .player-overlay.visible .center-controls button { pointer-events:auto; }
+        .btn-play-pause { width:66px; height:66px; background:rgba(0,0,0,.48); }
+        .player-bottom { padding:50px 18px calc(22px + env(safe-area-inset-bottom)); background:none; }
+        .player-meta { padding-right:72px; }
+        .player-meta-title { font-weight:800; font-size:1.15rem; line-height:1.3; margin-bottom:6px; text-shadow:0 2px 10px #000; }
+        .epi-title-display { color:#eee; margin-bottom:14px; }
+        .player-actions { position:absolute; right:14px; bottom:calc(110px + env(safe-area-inset-bottom)); }
+        .action-left { flex-direction:column; gap:18px; }
+        .btn-like { flex-direction:column; background:none; border:0; padding:0; gap:3px; }
+        .btn-like.liked { background:none; border:0; }
+        .btn-like .heart-icon { font-size:1.9rem; filter:drop-shadow(0 2px 5px #000); }
+        .views-display { flex-direction:column; color:#fff; gap:2px; }
+        .views-display span:first-child { font-size:1.5rem; }
+        .video-progress { height:18px; display:flex; align-items:center; background:transparent; margin:0; overflow:visible; position:relative; }
+        .video-progress:before { content:''; position:absolute; width:100%; height:4px; border-radius:4px; background:rgba(255,255,255,.35); }
+        .video-progress-fill { height:4px; position:relative; z-index:1; }
+        .player-time { display:flex; justify-content:space-between; color:#ddd; font-size:.7rem; font-variant-numeric:tabular-nums; }
+        .swipe-indicator { display:none; }
+        .player-hint { color:rgba(255,255,255,.7); font-size:.7rem; margin-top:9px; }
+        @media (min-width:700px) { .video-wrapper { box-shadow:0 0 70px #000; } }
+
+        /* Refined drama-player controls */
+        #playerScreen { background:#050507; }
+        .player-top { padding-top:calc(16px + env(safe-area-inset-top)); gap:10px; }
+        .player-story-title { font-size:.95rem; letter-spacing:.01em; }
+        .btn-back-player,.btn-download-player,.btn-epi-list { background:rgba(18,18,22,.65); border:1px solid rgba(255,255,255,.16); }
+        .player-bottom { padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
+        .player-meta-title { font-size:1.22rem; letter-spacing:-.02em; }
+        .epi-title-display { display:inline-block; padding:5px 9px; border-radius:6px; background:rgba(255,255,255,.14); color:#fff; font-size:.75rem; }
+        .player-hint { opacity:.7; }
+        .video-progress-fill { background:#f42647; }
+        #videoStatus { display:none; position:absolute; z-index:25; left:50%; top:50%; transform:translate(-50%,-50%); width:min(82%,300px); text-align:center; background:rgba(15,15,20,.88); border:1px solid rgba(255,255,255,.16); border-radius:16px; padding:18px; color:white; box-shadow:0 8px 32px #0008; }
+        #videoStatus.show { display:block; }
+        #videoStatusText { font-size:.88rem; line-height:1.5; }
+        #videoRetry { margin-top:12px; border:0; border-radius:999px; padding:10px 22px; color:#fff; font-weight:700; background:#e50914; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -802,6 +851,7 @@
         <video id="preloadVideo" playsinline webkit-playsinline muted style="display:none;"></video>
         
         <div class="video-loading" id="videoLoading"><div class="spinner"></div></div>
+        <div id="videoStatus" role="status"><div id="videoStatusText"></div><button id="videoRetry" type="button" onclick="retryVideo()">Dobara try karein</button></div>
         <div class="like-popup" id="likePopup">❤️</div>
         <div class="player-overlay" id="playerOverlay">
             <div class="player-top">
@@ -819,10 +869,12 @@
             <div class="swipe-indicator top">⬆ Next</div>
             <div class="swipe-indicator bottom">⬇ Prev</div>
             <div class="player-bottom">
-                <div class="epi-title-display" id="currentEpiTitle">Episode 1</div>
+                <div class="player-meta"><div class="player-meta-title" id="playerBottomTitle"></div><div class="epi-title-display" id="currentEpiTitle">Episode 1</div></div>
                 <div class="video-progress" id="videoProgress" onclick="seekVideo(event)">
                     <div class="video-progress-fill" id="progressFill"></div>
                 </div>
+                <div class="player-time"><span id="currentTimeLabel">0:00</span><span id="durationLabel">0:00</span></div>
+                <div class="player-hint">↑ Swipe up for next episode</div>
                 <div class="player-actions">
                     <div class="action-left">
                         <button class="btn-like" id="likeBtn" onclick="toggleLike()">
@@ -1032,7 +1084,8 @@ function showAdblockScreen() {
                         break;
                     }
                 }
-                if (!adVideoUrl && mediaFiles.length > 0) adVideoUrl = mediaFiles[0].textContent.trim();
+                // Do not hand an unsupported media type or wrapper URL to the video element.
+                if (!/^https?:\/\//i.test(adVideoUrl)) adVideoUrl = '';
 
                 let clickUrl = "";
                 const clickThroughs = xmlDoc.getElementsByTagName("ClickThrough");
@@ -1091,15 +1144,21 @@ function showAdblockScreen() {
         overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999999;display:flex;align-items:center;justify-content:center';
         overlay.innerHTML = `<video playsinline webkit-playsinline style="width:100%;height:100%;object-fit:contain"></video>
             <div style="position:absolute;top:20px;right:20px;color:white;background:#222;padding:8px;border-radius:8px" id="adTimerBadge">Ad loading...</div>
-            <button type="button" aria-label="Close ad" style="position:absolute;top:20px;left:20px;padding:10px;border:0;border-radius:8px;z-index:1">✕ Close</button>`;
+            <button type="button" aria-label="Close ad" style="position:absolute;top:20px;left:20px;padding:10px;border:0;border-radius:8px;z-index:1">✕ Close</button>
+            <button type="button" id="adPlayButton" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:14px 20px;background:#fff;color:#111;border:0;border-radius:30px;font-weight:700">▶ Ad chalane ke liye tap karein</button>`;
         document.body.appendChild(overlay);
         const video = overlay.querySelector('video');
         const badge = overlay.querySelector('#adTimerBadge');
-        let finished = false, lastProgress = Date.now(), lastTime = 0;
+        const playButton = overlay.querySelector('#adPlayButton');
+        let finished = false, lastProgress = Date.now(), lastTime = 0, needsTap = false;
+        const onVisibility = () => { lastProgress = Date.now(); };
+        document.addEventListener('visibilitychange', onVisibility);
         const finish = (success, cancelled = false) => {
             if (finished) return;
             finished = true;
             clearInterval(watchdog);
+            document.removeEventListener('visibilitychange', onVisibility);
+            video.onpause = null;
             video.pause();
             video.removeAttribute('src');
             video.load();
@@ -1109,6 +1168,20 @@ function showAdblockScreen() {
         };
         overlay.querySelector('button').onclick = () => finish(false, true);
         video.onclick = () => { if (clickUrl && /^https?:\/\//i.test(clickUrl)) window.open(clickUrl, '_blank', 'noopener,noreferrer'); };
+        function showPlayButton() {
+            if (finished) return;
+            needsTap = true;
+            playButton.style.display = 'block';
+            badge.textContent = 'Tap to play ad';
+        }
+        playButton.onclick = () => {
+            needsTap = false;
+            lastProgress = Date.now();
+            playButton.style.display = 'none';
+            video.play().catch(showPlayButton);
+        };
+        video.onplaying = () => { needsTap = false; playButton.style.display = 'none'; lastProgress = Date.now(); };
+        video.onpause = () => { if (!video.ended && !document.hidden) showPlayButton(); };
         video.onended = () => finish(true);
         video.onerror = () => finish(false);
         video.ontimeupdate = () => {
@@ -1118,11 +1191,15 @@ function showAdblockScreen() {
             if (video.currentTime >= 30) finish(true);
         };
         const watchdog = setInterval(() => {
+            if (document.hidden || needsTap) { lastProgress = Date.now(); return; }
             if (Date.now() - lastProgress > 12000) finish(false);
         }, 1000);
         video.muted = true;
         video.src = videoUrl;
-        video.play().catch(() => finish(false));
+        video.play().catch(error => {
+            if (error.name === 'NotAllowedError') showPlayButton();
+            else finish(false);
+        });
     }
 
     function hideSplash() {
@@ -1308,6 +1385,7 @@ function showAdblockScreen() {
         document.getElementById('playerScreen').classList.add('active');
         document.body.style.overflow = 'hidden';
         document.getElementById('playerTitle').textContent = currentStory.name || '';
+        document.getElementById('playerBottomTitle').textContent = currentStory.name || '';
         document.getElementById('epiCountBadge').textContent = currentStory.episodes.length;
         updateLikeViewUI();
         checkPointsAndPlay(currentEpiIndex, restoreTime);
@@ -1325,6 +1403,9 @@ function showAdblockScreen() {
         const preloadVid = document.getElementById('preloadVideo');
         const adClose = document.querySelector('#inAppAdOverlay button');
         if (adClose) adClose.click();
+        ++episodeLoadToken;
+        clearVideoWatchdog();
+        hideVideoStatus();
         video.pause();
         video.src = '';
         preloadVid.src = '';
@@ -1339,19 +1420,55 @@ function showAdblockScreen() {
         updatePointsUI();
     }
 
+    let episodeLoadToken = 0;
+    let lastPlaybackSavedAt = 0;
+    let videoLoadWatchdog = null;
+    function clearVideoWatchdog() { clearTimeout(videoLoadWatchdog); videoLoadWatchdog = null; }
+    function showVideoStatus(message, action = 'Dobara try karein') {
+        document.getElementById('videoLoading').classList.remove('show');
+        document.getElementById('videoStatusText').textContent = message;
+        document.getElementById('videoRetry').textContent = action;
+        document.getElementById('videoStatus').classList.add('show');
+    }
+    function hideVideoStatus() { document.getElementById('videoStatus').classList.remove('show'); }
+    function startVideoWatchdog() {
+        clearVideoWatchdog();
+        videoLoadWatchdog = setTimeout(() => {
+            if (!document.hidden && currentStoryDocId && document.getElementById('mainVideo').readyState < 3) {
+                showVideoStatus('Video load hone mein dikkat aa rahi hai. Connection check karke dobara try karein.');
+            }
+        }, 20000);
+    }
+    window.retryVideo = function() {
+        const video = document.getElementById('mainVideo');
+        if (video.dataset.needsPlay === '1') {
+            hideVideoStatus();
+            video.dataset.needsPlay = '0';
+            video.play().catch(() => { video.dataset.needsPlay = '1'; showVideoStatus('Video chalane ke liye neeche tap karein.', '▶ Play'); });
+        } else if (currentStoryDocId) {
+            hideVideoStatus();
+            loadEpisode(currentEpiIndex, Number.isFinite(video.currentTime) ? video.currentTime : 0);
+        }
+    };
     async function loadEpisode(index, restoreTime = 0) {
         if (!currentStory) return;
         if (index < 0) index = 0;
         if (index >= currentStory.episodes.length) return;
         
+        const loadToken = ++episodeLoadToken;
+        const storyId = currentStoryDocId;
         currentEpiIndex = index;
         hasPreloadedNext = false;
         const epi = currentStory.episodes[index];
         const video = document.getElementById('mainVideo');
+        hideVideoStatus();
+        video.dataset.needsPlay = '0';
         document.getElementById('videoLoading').classList.add('show');
-        
-        const workerProxyUrl = await generateSecureProxyUrl(currentStoryDocId, index);
-        
+        startVideoWatchdog();
+        let workerProxyUrl;
+        try { workerProxyUrl = await generateSecureProxyUrl(storyId, index); }
+        catch (err) { clearVideoWatchdog(); showVideoStatus('Video link nahi ban paya. HTTPS website par dobara try karein.'); return; }
+        if (loadToken !== episodeLoadToken || currentStoryDocId !== storyId) return;
         video.src = workerProxyUrl;
         video.load();
 
@@ -1363,7 +1480,17 @@ function showAdblockScreen() {
             video.addEventListener('loadedmetadata', onMeta);
         }
 
-        video.play().catch(() => {});
+        video.play().catch(error => {
+            if (loadToken !== episodeLoadToken) return;
+            if (error.name === 'NotAllowedError') {
+                clearVideoWatchdog();
+                video.dataset.needsPlay = '1';
+                showVideoStatus('Browser ne autoplay roka hai. Video shuru karne ke liye tap karein.', '▶ Play');
+            } else if (error.name !== 'AbortError') {
+                clearVideoWatchdog();
+                showVideoStatus('Video shuru nahi ho paya. Internet check karke dobara try karein.');
+            }
+        });
         document.getElementById('currentEpiTitle').textContent = `Ep ${index + 1}: ${epi.title || ''}`;
         document.getElementById('playPauseBtn').textContent = '⏸';
         updateEpiGridHighlight();
@@ -1498,37 +1625,48 @@ function showAdblockScreen() {
         document.getElementById('playerOverlay').classList.add('visible');
         isOverlayVisible = true;
         clearTimeout(overlayTimer);
-        overlayTimer = setTimeout(hideOverlay, 3500);
+        if (!document.getElementById('mainVideo').paused) overlayTimer = setTimeout(hideOverlay, 3500);
     }
     function hideOverlay() {
         document.getElementById('playerOverlay').classList.remove('visible');
         isOverlayVisible = false;
     }
 
+    function formatTime(value) {
+        if (!Number.isFinite(value)) return '0:00';
+        const seconds = Math.floor(value);
+        return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+    }
     function setupVideoEvents() {
         const video = document.getElementById('mainVideo');
         const preloadVid = document.getElementById('preloadVideo');
         const wrapper = document.getElementById('videoWrapper');
         
         wrapper.addEventListener('click', e => {
-            if (e.target === wrapper || e.target === video) {
+            if (e.target === wrapper || e.target === video || e.target.id === 'playerOverlay') {
                 isOverlayVisible ? hideOverlay() : showOverlay();
             }
         });
 
         video.addEventListener('error', () => {
-            document.getElementById('videoLoading').classList.remove('show');
+            if (!currentStoryDocId || !video.getAttribute('src')) return;
+            clearVideoWatchdog();
+            showVideoStatus('Video load nahi ho paya. Server, domain permission ya internet connection check karein.');
         });
-        video.addEventListener('waiting', () => document.getElementById('videoLoading').classList.add('show'));
-        video.addEventListener('canplay', () => document.getElementById('videoLoading').classList.remove('show'));
+        video.addEventListener('waiting', () => { document.getElementById('videoLoading').classList.add('show'); startVideoWatchdog(); });
+        video.addEventListener('canplay', () => { clearVideoWatchdog(); document.getElementById('videoLoading').classList.remove('show'); });
         video.addEventListener('playing', () => {
+            clearVideoWatchdog(); hideVideoStatus();
             document.getElementById('videoLoading').classList.remove('show');
+            if (isOverlayVisible) showOverlay();
             document.getElementById('playPauseBtn').textContent = '⏸';
         });
-        video.addEventListener('pause', () => document.getElementById('playPauseBtn').textContent = '▶');
+        video.addEventListener('pause', () => { document.getElementById('playPauseBtn').textContent = '▶'; if (currentStoryDocId && !video.ended) showOverlay(); });
         
         video.addEventListener('timeupdate', () => {
             if (video.duration) {
+                document.getElementById('currentTimeLabel').textContent = formatTime(video.currentTime);
+                document.getElementById('durationLabel').textContent = formatTime(video.duration);
                 const progressPercent = (video.currentTime / video.duration) * 100;
                 document.getElementById('progressFill').style.width = progressPercent + '%';
                 
@@ -1541,7 +1679,8 @@ function showAdblockScreen() {
                     });
                 }
 
-                if (currentStoryDocId && !video.paused && video.currentTime > 2) {
+                if (currentStoryDocId && !video.paused && video.currentTime > 2 && Date.now() - lastPlaybackSavedAt > 4000) {
+                    lastPlaybackSavedAt = Date.now();
                     localStorage.setItem('pawanTV_lastPlayback', JSON.stringify({
                         docId: currentStoryDocId,
                         epiIndex: currentEpiIndex,
@@ -1562,18 +1701,20 @@ function showAdblockScreen() {
         const bar = document.getElementById('videoProgress');
         const rect = bar.getBoundingClientRect();
         if (video.duration) {
-            video.currentTime = video.duration * ((e.clientX - rect.left) / rect.width);
+            video.currentTime = video.duration * Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
         }
     };
 
     function setupTouchEvents() {
         const wrapper = document.getElementById('videoWrapper');
         wrapper.addEventListener('touchstart', e => {
+            if (e.target.closest('button, .video-progress')) { touchStartY = null; return; }
             touchStartY = e.touches[0].clientY;
             touchStartX = e.touches[0].clientX;
         }, { passive: true });
 
         wrapper.addEventListener('touchend', e => {
+            if (touchStartY === null || e.target.closest('button, .video-progress')) return;
             const diffY = touchStartY - e.changedTouches[0].clientY;
             const diffX = touchStartX - e.changedTouches[0].clientX;
             if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 50) {
@@ -1583,8 +1724,9 @@ function showAdblockScreen() {
 
         let lastTap = 0;
         wrapper.addEventListener('touchend', e => {
+            if (e.target.closest('button, .video-progress') || touchStartY === null || Math.abs(touchStartY - e.changedTouches[0].clientY) > 30) return;
             const now = Date.now();
-            if (now - lastTap < 300) window.toggleLike();
+            if (now - lastTap < 300 && !hasLiked) window.toggleLike();
             lastTap = now;
         });
     }
@@ -1778,5 +1920,5 @@ function showAdblockScreen() {
 
     init();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a565eaac98451794',t:'MTc5Mzk4NzE3Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a565eaac98451794',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a565faaf18e64fd4',t:'MTc5Mzk4NzgzMg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a565faaf18e64fd4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
