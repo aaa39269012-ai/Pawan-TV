@@ -1054,25 +1054,35 @@ function showAdblockScreen() {
         if (adRequestActive) return;
         adRequestActive = true;
         const requestedStoryId = currentStoryDocId;
-        try {
+        let attempts = 0;
+        const fail = () => {
+            adRequestActive = false;
+            if (currentStoryDocId !== requestedStoryId) return;
+            alert('Ad load nahi ho paya. Internet check karke episode phir se select karein; ad chalne ke baad hi points milenge.');
+            onError?.();
+        };
+        const attempt = async () => {
+            if (currentStoryDocId !== requestedStoryId) { adRequestActive = false; return; }
+            attempts++;
             await preloadAd();
             if (currentStoryDocId !== requestedStoryId) { adRequestActive = false; return; }
-            if (!cachedAdData) throw new Error('Ad unavailable');
+            if (!cachedAdData) {
+                if (attempts < 2) return attempt();
+                return fail();
+            }
             const { adVideoUrl, clickUrl } = cachedAdData;
             cachedAdData = null;
-            preloadAd();
             playInAppAd(adVideoUrl, clickUrl, () => {
                 adRequestActive = false;
+                preloadAd();
                 onSuccess?.();
-            }, () => {
-                adRequestActive = false;
-                onError?.();
+            }, (cancelled) => {
+                if (cancelled) { adRequestActive = false; onError?.(); return; }
+                if (attempts < 2) attempt();
+                else fail();
             });
-        } catch (e) {
-            adRequestActive = false;
-            alert('Ad load nahi ho paya. Internet connection check karke dobara try karein.');
-            onError?.();
-        }
+        };
+        try { await attempt(); } catch (e) { fail(); }
     }
 
     function playInAppAd(videoUrl, clickUrl, onSuccess, onError) {
@@ -1086,7 +1096,7 @@ function showAdblockScreen() {
         const video = overlay.querySelector('video');
         const badge = overlay.querySelector('#adTimerBadge');
         let finished = false, lastProgress = Date.now(), lastTime = 0;
-        const finish = (success, message) => {
+        const finish = (success, cancelled = false) => {
             if (finished) return;
             finished = true;
             clearInterval(watchdog);
@@ -1094,13 +1104,13 @@ function showAdblockScreen() {
             video.removeAttribute('src');
             video.load();
             overlay.remove();
-            if (message) alert(message);
-            (success ? onSuccess : onError)?.();
+            if (success) onSuccess?.();
+            else onError?.(cancelled);
         };
-        overlay.querySelector('button').onclick = () => finish(false);
+        overlay.querySelector('button').onclick = () => finish(false, true);
         video.onclick = () => { if (clickUrl && /^https?:\/\//i.test(clickUrl)) window.open(clickUrl, '_blank', 'noopener,noreferrer'); };
         video.onended = () => finish(true);
-        video.onerror = () => finish(false, 'Ad play nahi ho paya. Kripya dobara try karein.');
+        video.onerror = () => finish(false);
         video.ontimeupdate = () => {
             if (video.currentTime > lastTime + 0.05) { lastTime = video.currentTime; lastProgress = Date.now(); }
             const remaining = Number.isFinite(video.duration) ? Math.max(0, Math.ceil(video.duration - video.currentTime)) : null;
@@ -1108,11 +1118,11 @@ function showAdblockScreen() {
             if (video.currentTime >= 30) finish(true);
         };
         const watchdog = setInterval(() => {
-            if (Date.now() - lastProgress > 12000) finish(false, 'Ad ruk gaya tha. Internet check karke dobara try karein.');
+            if (Date.now() - lastProgress > 12000) finish(false);
         }, 1000);
         video.muted = true;
         video.src = videoUrl;
-        video.play().catch(() => finish(false, 'Ad start nahi ho paya. Kripya dobara try karein.'));
+        video.play().catch(() => finish(false));
     }
 
     function hideSplash() {
@@ -1768,5 +1778,5 @@ function showAdblockScreen() {
 
     init();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a565eaac98451794',t:'MTc5Mzk4NzE3Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a565eaac98451794',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
