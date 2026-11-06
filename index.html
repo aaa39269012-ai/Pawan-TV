@@ -807,6 +807,7 @@
             <div class="player-top">
                 <button class="btn-back-player" onclick="handleBackBtn()">←</button>
                 <div class="player-story-title" id="playerTitle">Story Name</div>
+                <button class="btn-download-player" onclick="shareStory()" aria-label="Share story" title="Share story">🔗</button>
                 <button class="btn-download-player" onclick="handleDownloadBatchClick()">📥</button>
                 <button class="btn-epi-list" onclick="openEpiPanel()">🎬<span class="epi-count-badge" id="epiCountBadge">1</span></button>
             </div>
@@ -984,14 +985,19 @@ function showAdblockScreen() {
     }
 
     let cachedAdData = null;
-    let isFetchingAd = false;
+    let adFetchPromise = null;
+    let adRequestActive = false;
     const adTagUrls = [
         "https://surefootedpause.com/d.mRFFzcdeGGNOvoZQG/Uh/Meamt9/uhZpU/lvkHPxTLcX0jNajUUkwHNzTMcyt_NMzHQ/2UNoT/AK2BMRSUZ_s/afW/1MpKd/DF0Tx_"
     ];
 
-    async function preloadAd() {
-        if (cachedAdData || isFetchingAd) return;
-        isFetchingAd = true;
+    function preloadAd() {
+        if (cachedAdData) return Promise.resolve();
+        if (adFetchPromise) return adFetchPromise;
+        adFetchPromise = fetchAd().finally(() => { adFetchPromise = null; });
+        return adFetchPromise;
+    }
+    async function fetchAd() {
 
         for (let tagUrl of adTagUrls) {
             try {
@@ -1006,10 +1012,14 @@ function showAdblockScreen() {
                 
                 const workerUrl = `${WORKER_BASE}?url=` + encodeURIComponent(tagUrl) + `&exp=${exp}&sig=${signature}`;
 
-                const response = await fetch(workerUrl);
-                if (!response.ok) continue;
-
-                const xmlText = await response.text();
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 8000);
+                let response, xmlText;
+                try {
+                    response = await fetch(workerUrl, { signal: controller.signal });
+                    if (!response.ok) continue;
+                    xmlText = await response.text();
+                } finally { clearTimeout(timeout); }
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                 const mediaFiles = xmlDoc.getElementsByTagName("MediaFile");
@@ -1038,125 +1048,71 @@ function showAdblockScreen() {
                 console.log("Ad preload failed, retrying...", e);
             }
         }
-        isFetchingAd = false;
     }
 
     async function triggerAd(onSuccess, onError) {
-        if (!cachedAdData) {
-            const statusEl = document.getElementById('loadingStatusText');
-            if(statusEl) statusEl.textContent = "Loading Ad...";
+        if (adRequestActive) return;
+        adRequestActive = true;
+        const requestedStoryId = currentStoryDocId;
+        try {
             await preloadAd();
-        }
-
-        if (cachedAdData) {
+            if (currentStoryDocId !== requestedStoryId) { adRequestActive = false; return; }
+            if (!cachedAdData) throw new Error('Ad unavailable');
             const { adVideoUrl, clickUrl } = cachedAdData;
             cachedAdData = null;
             preloadAd();
-            playInAppAd(adVideoUrl, clickUrl, onSuccess, onError);
-        } else {
-            setTimeout(async () => {
-                await preloadAd();
-                if (cachedAdData) {
-                    const { adVideoUrl, clickUrl } = cachedAdData;
-                    cachedAdData = null;
-                    playInAppAd(adVideoUrl, clickUrl, onSuccess, onError);
-                } else {
-                    alert('Ad load nahi ho paya. Kripya apna Ad Blocker / Private DNS band karein aur page refresh karke dobara koshish karein.');
-                    if (typeof onError === 'function') onError();
-                }
-            }, 1000);
+            playInAppAd(adVideoUrl, clickUrl, () => {
+                adRequestActive = false;
+                onSuccess?.();
+            }, () => {
+                adRequestActive = false;
+                onError?.();
+            });
+        } catch (e) {
+            adRequestActive = false;
+            alert('Ad load nahi ho paya. Internet connection check karke dobara try karein.');
+            onError?.();
         }
     }
 
     function playInAppAd(videoUrl, clickUrl, onSuccess, onError) {
-        let adOverlay = document.getElementById('inAppAdOverlay');
-        if (!adOverlay) {
-            adOverlay = document.createElement('div');
-            adOverlay.id = 'inAppAdOverlay';
-            adOverlay.style.cssText = 'position:fixed; inset:0; background:#000; z-index:999999; display:flex; align-items:center; justify-content:center; cursor:pointer;';
-            adOverlay.innerHTML = `
-                <video id="inAppAdVideo" playsinline webkit-playsinline style="width:100%; height:100%; object-fit:contain; cursor:pointer; pointer-events:auto;"></video>
-                <div id="adTimerBadge" style="position:absolute; top:20px; right:20px; background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:6px 14px; border-radius:50px; font-size:0.85rem; font-weight:600; z-index:1000000; pointer-events:none;">Ad: 30s</div>
-            `;
-            document.body.appendChild(adOverlay);
-        } else {
-            adOverlay.style.display = 'flex';
-            adOverlay.style.cursor = 'pointer';
-        }
-
-        const adVid = document.getElementById('inAppAdVideo');
-        const timerBadge = document.getElementById('adTimerBadge');
-        adVid.src = videoUrl;
-        adVid.muted = true;
-        adVid.style.cursor = 'pointer';
-        adVid.style.pointerEvents = 'auto';
-
-        let rewarded = false;
-        let countdownTimer = null;
-        let timeLeft = 30;
-
-        const cleanup = () => {
-            if (countdownTimer) clearInterval(countdownTimer);
-            adOverlay.style.display = 'none';
-            adVid.src = '';
-            adVid.onended = null;
-            adVid.onerror = null;
-            adVid.onwaiting = null;
-            adVid.onclick = null;
-            adOverlay.onclick = null;
+        const overlay = document.createElement('div');
+        overlay.id = 'inAppAdOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999999;display:flex;align-items:center;justify-content:center';
+        overlay.innerHTML = `<video playsinline webkit-playsinline style="width:100%;height:100%;object-fit:contain"></video>
+            <div style="position:absolute;top:20px;right:20px;color:white;background:#222;padding:8px;border-radius:8px" id="adTimerBadge">Ad loading...</div>
+            <button type="button" aria-label="Close ad" style="position:absolute;top:20px;left:20px;padding:10px;border:0;border-radius:8px;z-index:1">✕ Close</button>`;
+        document.body.appendChild(overlay);
+        const video = overlay.querySelector('video');
+        const badge = overlay.querySelector('#adTimerBadge');
+        let finished = false, lastProgress = Date.now(), lastTime = 0;
+        const finish = (success, message) => {
+            if (finished) return;
+            finished = true;
+            clearInterval(watchdog);
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+            overlay.remove();
+            if (message) alert(message);
+            (success ? onSuccess : onError)?.();
         };
-
-        const failAd = () => {
-            if (rewarded) return;
-            rewarded = true;
-            cleanup();
-            if (typeof onError === 'function') onError();
+        overlay.querySelector('button').onclick = () => finish(false);
+        video.onclick = () => { if (clickUrl && /^https?:\/\//i.test(clickUrl)) window.open(clickUrl, '_blank', 'noopener,noreferrer'); };
+        video.onended = () => finish(true);
+        video.onerror = () => finish(false, 'Ad play nahi ho paya. Kripya dobara try karein.');
+        video.ontimeupdate = () => {
+            if (video.currentTime > lastTime + 0.05) { lastTime = video.currentTime; lastProgress = Date.now(); }
+            const remaining = Number.isFinite(video.duration) ? Math.max(0, Math.ceil(video.duration - video.currentTime)) : null;
+            badge.textContent = remaining === null ? 'Ad' : `Ad: ${remaining}s`;
+            if (video.currentTime >= 30) finish(true);
         };
-
-        const succeedAd = () => {
-            if (rewarded) return;
-            rewarded = true;
-            cleanup();
-            if (typeof onSuccess === 'function') onSuccess();
-        };
-
-        const handleAdClick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (clickUrl) {
-                window.open(clickUrl, '_blank', 'noopener,noreferrer');
-            }
-        };
-        adVid.onclick = handleAdClick;
-        adOverlay.onclick = handleAdClick;
-
-        adVid.onended = () => succeedAd();
-        adVid.onerror = () => failAd();
-
-        adVid.onwaiting = () => {
-            if (!adVid.paused) {
-                adVid.play().catch(() => {});
-            }
-        };
-
-        timerBadge.textContent = `Ad: ${timeLeft}s`;
-        countdownTimer = setInterval(() => {
-            timeLeft -= 1;
-            if (timeLeft > 0) {
-                timerBadge.textContent = `Ad: ${timeLeft}s`;
-            } else {
-                clearInterval(countdownTimer);
-                timerBadge.textContent = `Ad: 0s`;
-                succeedAd();
-            }
+        const watchdog = setInterval(() => {
+            if (Date.now() - lastProgress > 12000) finish(false, 'Ad ruk gaya tha. Internet check karke dobara try karein.');
         }, 1000);
-
-        adVid.play().then(() => {
-            setTimeout(() => { adVid.muted = false; }, 300);
-        }).catch(() => {
-            adVid.muted = true;
-            adVid.play().catch(() => {});
-        });
+        video.muted = true;
+        video.src = videoUrl;
+        video.play().catch(() => finish(false, 'Ad start nahi ho paya. Kripya dobara try karein.'));
     }
 
     function hideSplash() {
@@ -1168,33 +1124,50 @@ function showAdblockScreen() {
         document.getElementById('homeScreen').style.display = 'block';
     }
 
-    function pushState(state) { history.pushState({ screen: state }, '', ''); }
+    function homeUrl() {
+        const url = new URL(location.href);
+        url.searchParams.delete('story');
+        return url.pathname + url.search + url.hash;
+    }
+    function storyUrl(id) {
+        const url = new URL(location.href);
+        url.searchParams.set('story', id);
+        return url.toString();
+    }
+    function safeHistory(method, state, url) {
+        try { history[method]({ screen: state }, '', url); return true; }
+        catch (error) { console.warn('History navigation unavailable:', error); return false; }
+    }
+    function pushState(state) { safeHistory('pushState', state, location.href); }
+    let pendingStoryId = new URL(location.href).searchParams.get('story');
+    let storiesLoaded = false;
 
     window.addEventListener('popstate', function() {
-        if (document.getElementById('downloadModal').classList.contains('active')) {
-            closeDownloadModal(); pushState('player'); return;
-        }
-        if (document.getElementById('epiPanel').classList.contains('open')) {
-            closeEpiPanel(); pushState('player'); return;
-        }
-        if (document.getElementById('playerScreen').classList.contains('active')) {
+        closeDownloadModal();
+        closeEpiPanel();
+        const id = new URL(location.href).searchParams.get('story');
+        if (id && storiesLoaded) {
+            const index = stories.findIndex(s => s.docId === id);
+            if (index !== -1 && currentStoryDocId !== id) openStoryByIndex(index, false);
+        } else if (!id && document.getElementById('playerScreen').classList.contains('active')) {
             closePlayerInternal();
         }
     });
 
     function init() {
-        checkAndForceChrome();
-        detectAdBlockerAndDNS();
         updatePointsUI();
-        history.replaceState({ screen: 'home' }, '', '');
+        // A shared link gets a home entry beneath it so the player back button works.
+        if (pendingStoryId) {
+            const sharedUrl = location.href;
+            safeHistory('replaceState', 'home', homeUrl());
+            safeHistory('pushState', 'player', sharedUrl);
+        } else safeHistory('replaceState', 'home', location.href);
         setupVideoEvents();
         setupTouchEvents();
-        
         setTimeout(() => {
             const statusEl = document.getElementById('loadingStatusText');
             if (statusEl) statusEl.textContent = "Connecting to database...";
         }, 800);
-
         loadStories();
         preloadAd();
     }
@@ -1211,6 +1184,19 @@ function showAdblockScreen() {
             setTimeout(hideSplash, 400);
             renderHome(stories);
 
+            storiesLoaded = true;
+            if (pendingStoryId) {
+                const id = pendingStoryId;
+                pendingStoryId = null;
+                const index = stories.findIndex(s => s.docId === id);
+                if (index !== -1 && stories[index].episodes?.length) {
+                    openStoryByIndex(index, false);
+                } else {
+                    safeHistory('replaceState', 'home', homeUrl());
+                    alert('Yeh story nahi mili ya isme koi episode nahi hai.');
+                }
+                return;
+            }
             const savedPlayback = JSON.parse(localStorage.getItem('pawanTV_lastPlayback') || 'null');
             if (savedPlayback && !currentStoryDocId) {
                 const storyIdx = stories.findIndex(s => s.docId === savedPlayback.docId);
@@ -1219,7 +1205,7 @@ function showAdblockScreen() {
                     currentStoryDocId = currentStory.docId;
                     currentEpiIndex = savedPlayback.epiIndex || 0;
                     localStorage.removeItem('pawanTV_lastPlayback');
-                    openPlayer(savedPlayback.time || 0);
+                    openPlayer(savedPlayback.time || 0, true);
                     return;
                 }
             }
@@ -1276,34 +1262,59 @@ function showAdblockScreen() {
         renderHome(filtered);
     };
 
-    window.openStory = function(index) {
-        currentStory = stories[index];
-        currentStoryDocId = currentStory.docId;
+    function openStoryByIndex(index, addHistory = true) {
+        const story = stories[index];
+        if (!story || !story.episodes?.length) { alert('Is story mein koi episode nahi hai.'); return; }
+        currentStory = story;
+        currentStoryDocId = story.docId;
         currentEpiIndex = 0;
         hasLiked = getLikedStatus(currentStoryDocId);
         viewCounted = false;
-        openPlayer(0);
+        openPlayer(0, addHistory);
+    }
+    window.openStory = function(index) { openStoryByIndex(index); };
+    window.shareStory = async function() {
+        if (!currentStoryDocId) return;
+        const url = storyUrl(currentStoryDocId);
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: currentStory.name || 'Pawan TV', url });
+                return;
+            }
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(url);
+                alert('Story link copy ho gaya!');
+                return;
+            }
+            window.prompt('Story link copy karein:', url);
+        } catch (err) {
+            if (err.name !== 'AbortError') window.prompt('Story link copy karein:', url);
+        }
     };
 
-    function openPlayer(restoreTime = 0) {
+    function openPlayer(restoreTime = 0, addHistory = true) {
         if (!currentStory || !currentStory.episodes || !currentStory.episodes.length) return;
+        if (addHistory) safeHistory('pushState', 'player', storyUrl(currentStoryDocId));
         document.getElementById('playerScreen').classList.add('active');
         document.body.style.overflow = 'hidden';
         document.getElementById('playerTitle').textContent = currentStory.name || '';
         document.getElementById('epiCountBadge').textContent = currentStory.episodes.length;
         updateLikeViewUI();
-        
         checkPointsAndPlay(currentEpiIndex, restoreTime);
         buildEpiGrid();
         showOverlay();
-        pushState('player');
     }
 
-    window.handleBackBtn = function() { history.back(); };
+    window.handleBackBtn = function() {
+        if (history.state?.screen === 'player') history.back();
+        else closePlayerInternal();
+    };
 
     function closePlayerInternal() {
         const video = document.getElementById('mainVideo');
         const preloadVid = document.getElementById('preloadVideo');
+        const adClose = document.querySelector('#inAppAdOverlay button');
+        if (adClose) adClose.click();
         video.pause();
         video.src = '';
         preloadVid.src = '';
@@ -1410,7 +1421,8 @@ function showAdblockScreen() {
     window.togglePlayPause = function() {
         const video = document.getElementById('mainVideo');
         if (video.paused) {
-            video.play();
+            if (!video.getAttribute('src') && currentStory) { checkPointsAndPlay(currentEpiIndex, 0); return; }
+            video.play().catch(() => {});
             document.getElementById('playPauseBtn').textContent = '⏸';
         } else {
             video.pause();
@@ -1435,18 +1447,25 @@ function showAdblockScreen() {
             updatePointsUI();
             loadEpisode(targetIndex, restoreTime);
         } else {
+            if (adRequestActive) return;
             const video = document.getElementById('mainVideo');
+            const previousStoryId = currentStoryDocId;
+            const wasPlaying = video && !video.paused;
             if (video) video.pause();
 
             triggerAd(
                 () => {
+                    if (currentStoryDocId !== previousStoryId) return;
                     userPoints = Math.min(5, userPoints + 5);
                     userPoints -= 1;
                     localStorage.setItem('pawanTV_points', userPoints);
                     updatePointsUI();
                     loadEpisode(targetIndex, restoreTime);
                 },
-                () => {}
+                () => {
+                    if (wasPlaying && currentStoryDocId === previousStoryId) video.play().catch(() => {});
+                    showOverlay();
+                }
             );
         }
     }
