@@ -226,6 +226,22 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.4);
             background: #111;
         }
+        .story-poster-text-user {
+            width: 100%;
+            height: 150px;
+            border-radius: var(--radius);
+            background: radial-gradient(circle at 50% 35%, #2a0a0d 0%, #0b0b10 75%);
+            border: 1px solid rgba(229,9,20,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+        .story-poster-text-user b { color: var(--accent); font-weight: 900; }
         .story-poster-placeholder-user {
             width: 100%;
             height: 150px;
@@ -617,7 +633,7 @@
             #epiPanel { max-width: 200px; }
             .epi-num-btn { width: 34px; height: 34px; font-size: 0.76rem; }
             .stories-grid-user { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
-            .story-poster-user, .story-poster-placeholder-user { height: 132px; }
+            .story-poster-user, .story-poster-placeholder-user, .story-poster-text-user { height: 132px; }
         }
 
         /* Short-drama player */
@@ -1194,6 +1210,20 @@ function showAdblockScreen() {
                 };
             });
     }
+    // Uses the item's own file named "poster" (poster.jpg/png/webp/gif). Returns '' if absent.
+    function archivePosterUrl(identifier, json) {
+        const files = Array.isArray(json?.files) ? json.files : [];
+        const imageExt = /\.(?:jpe?g|png|webp|gif)$/i;
+        const posters = files.filter(file => file && typeof file.name === 'string' && file.name &&
+            file.private !== true && file.private !== 'true' && !file.name.includes('/') &&
+            imageExt.test(file.name) && file.name.replace(imageExt, '').toLowerCase() === 'poster');
+        if (!posters.length) return '';
+        posters.sort((a, b) => (a.source === 'derivative') - (b.source === 'derivative'));
+        return archiveDownloadUrl(identifier, posters[0].name);
+    }
+    function isArchiveServicesImage(value) {
+        return typeof value === 'string' && value.startsWith('https://archive.org/services/img/');
+    }
     function parseArchiveMetadata(identifier, json) {
         if (json?.is_dark === true || !json || !json.metadata || !Array.isArray(json.files)) {
             return { status: 'unavailable', checkedAt: Date.now() };
@@ -1210,6 +1240,8 @@ function showAdblockScreen() {
             status: 'ok', checkedAt: Date.now(),
             title: typeof rawTitle === 'string' ? rawTitle.trim() : '',
             episodes: archiveEpisodesFromMetadata(identifier, json),
+            posterUrl: archivePosterUrl(identifier, json),
+            posterChecked: true,
             storageDir: validDir ? json.dir : '',
             storageServers,
             defaultServer: storageServers.includes(json.server) ? json.server : ''
@@ -1219,7 +1251,7 @@ function showAdblockScreen() {
         if (!validArchiveId(identifier)) return Promise.reject(new Error('Invalid Archive item'));
         loadStoredArchiveMeta(identifier);
         const cached = archiveMeta.get(identifier);
-        const cachedHasStorageInfo = cached?.status !== 'ok' || Array.isArray(cached.storageServers);
+        const cachedHasStorageInfo = cached?.status !== 'ok' || (Array.isArray(cached.storageServers) && cached.posterChecked === true);
         if (!options.force && cached && cachedHasStorageInfo && Date.now() - cached.checkedAt < ARCHIVE_META_TTL_MS) return Promise.resolve(cached);
         const existing = archiveMetaJobs.get(identifier);
         if (existing) {
@@ -1381,7 +1413,7 @@ function showAdblockScreen() {
                 ...(source || {}),
                 docId: archiveDocId(id),
                 name: source?.name || meta?.title || item.title,
-                poster: source?.poster || archiveImageUrl(id),
+                poster: (source?.poster && !isArchiveServicesImage(source.poster) ? source.poster : '') || (meta?.status === 'ok' ? meta.posterUrl || '' : ''),
                 folder: source?.folder || 'Internet Archive',
                 desc: source?.desc || '',
                 episodes: meta?.status === 'ok' ? meta.episodes : fallbackEpisodes,
@@ -1719,7 +1751,7 @@ function showAdblockScreen() {
         overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999999;display:flex;align-items:center;justify-content:center';
         overlay.innerHTML = `<video id="inAppAdVideo" playsinline webkit-playsinline style="width:100%;height:100%;object-fit:contain"></video>
             <div style="position:absolute;top:20px;right:20px;color:white;background:#222;padding:8px;border-radius:8px" id="adTimerBadge">Ad loading...</div>
-            <button id="adCloseBtn" type="button" aria-label="Close ad" style="position:absolute;top:20px;left:20px;padding:10px;border:0;border-radius:8px;z-index:1">✕ Close</button>
+            <button id="adSoundBtn" type="button" aria-label="Toggle ad sound" style="position:absolute;top:20px;left:20px;z-index:3;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:20px;cursor:pointer">🔇</button>
             <button id="adSkipBtn" type="button" hidden disabled style="position:absolute;right:18px;bottom:max(25px,env(safe-area-inset-bottom));z-index:2;padding:10px 16px;border:1px solid #aaa;border-radius:8px;background:#111c;color:white;font-weight:700">Skip Ad</button>
             <button type="button" id="adPlayButton" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:14px 20px;background:#fff;color:#111;border:0;border-radius:30px;font-weight:700">▶ Ad chalane ke liye tap karein</button>`;
         document.body.appendChild(overlay);
@@ -1778,7 +1810,6 @@ function showAdblockScreen() {
             video.onpause = null; video.pause(); video.removeAttribute('src'); video.load(); overlay.remove();
             if (success) onSuccess?.(); else onError?.(cancelled);
         };
-        overlay.querySelector('#adCloseBtn').onclick = () => finish(false, true);
         skipButton.onclick = event => { event.preventDefault(); event.stopPropagation(); finish(true, false, true); };
         video.onclick = () => {
             if (adData.clickUrl) { fireVastTracking(adData.clickTracking, '', currentTime()); window.open(adData.clickUrl, '_blank', 'noopener,noreferrer'); }
@@ -1801,7 +1832,29 @@ function showAdblockScreen() {
         video.ontimeupdate = updateProgress;
         video.onloadedmetadata = updateProgress;
         video.ondurationchange = updateProgress;
-        video.muted = true; video.src = adData.adVideoUrl; updateProgress();
+        // Ad starts muted so autoplay is allowed, then auto-unmutes once playing.
+        const soundBtn = overlay.querySelector('#adSoundBtn');
+        let userMuted = false, unmuteTimer = null;
+        const renderSound = () => { soundBtn.textContent = video.muted ? '🔇' : '🔊'; };
+        const tryUnmute = () => {
+            if (finished || userMuted || !video.muted) return;
+            video.muted = false; video.volume = 1; renderSound();
+        };
+        soundBtn.onclick = event => {
+            event.preventDefault(); event.stopPropagation();
+            userMuted = !video.muted;
+            video.muted = !video.muted;
+            if (!video.muted) video.volume = 1;
+            renderSound();
+        };
+        video.addEventListener('volumechange', renderSound);
+        video.muted = true; video.volume = 1; renderSound();
+        video.src = adData.adVideoUrl; updateProgress();
+        video.addEventListener('playing', () => {
+            tryUnmute();
+            clearTimeout(unmuteTimer);
+            unmuteTimer = setTimeout(tryUnmute, 1500); // retry once if browser delayed it
+        });
         video.play().catch(error => { if (error.name === 'NotAllowedError') showPlayButton(); else finish(false); });
     }
 
@@ -2046,8 +2099,8 @@ function showAdblockScreen() {
     function storyCardHTML(story) {
         const idx = stories.findIndex(s => s.docId === story.docId);
         const posterSrc = safeImageUrl(story.poster);
-        const placeholder = '<div class="story-poster-placeholder-user"><span>🎬</span></div>';
-        const imgTag = posterSrc ? `<img src="${escapeHTML(posterSrc)}" class="story-poster-user" loading="lazy" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="story-poster-placeholder-user" style="display:none"><span>🎬</span></div>` : placeholder;
+        const textPoster = '<div class="story-poster-text-user"><span>PAWAN<b>TV</b></span></div>';
+        const imgTag = posterSrc ? `<img src="${escapeHTML(posterSrc)}" class="story-poster-user" loading="lazy" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="story-poster-text-user" style="display:none"><span>PAWAN<b>TV</b></span></div>` : textPoster;
         const count = story._isArchiveAuto && !story._archiveMetadataKnown && !story.episodes.length ? '…' : story.episodes.length;
         const archiveAttr = story._archiveId ? ` data-archive-id="${escapeHTML(story._archiveId)}"` : '';
         return `<div class="story-card-user" onclick="openStory(${idx})"${archiveAttr}>
@@ -2308,7 +2361,7 @@ function showAdblockScreen() {
             _pawanArchiveAuto: true,
             archiveId: story._archiveId,
             name: String(story.name || story._archiveId),
-            poster: String(story.poster || archiveImageUrl(story._archiveId)),
+            poster: String(story.poster && !isArchiveServicesImage(story.poster) ? story.poster : ''),
             folder: String(story.folder || 'Internet Archive'),
             desc: String(story.desc || ''),
             episodes,
