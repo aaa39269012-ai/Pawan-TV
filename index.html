@@ -319,7 +319,7 @@
             justify-content: space-between;
             gap: 8px;
         }
-        .btn-back-player, .btn-download-player, .btn-epi-list {
+        .btn-back-player, .btn-share-player, .btn-epi-list {
             width: 40px;
             height: 40px;
             background: rgba(255,255,255,0.12);
@@ -335,7 +335,7 @@
             transition: background 0.2s;
             flex-shrink: 0;
         }
-        .btn-back-player:active, .btn-download-player:active, .btn-epi-list:active {
+        .btn-back-player:active, .btn-share-player:active, .btn-epi-list:active {
             background: rgba(255,255,255,0.22);
         }
         .player-story-title {
@@ -347,7 +347,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .btn-download-player { margin-right: 4px; }
+        .btn-share-player { margin-right: 4px; }
         .btn-epi-list { position: relative; }
         .epi-count-badge {
             position: absolute;
@@ -613,139 +613,6 @@
         }
         #epiPanelOverlay.active { display: block; }
 
-        /* Download Modal */
-        #downloadModal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.78);
-            z-index: 10002;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        #downloadModal.active { display: flex; }
-        .download-modal-content {
-            background: #121212;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 340px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-        }
-        .download-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
-        }
-        .download-modal-header h3 { font-size: 1.05rem; color: var(--accent); font-weight: 700; }
-        .download-batch-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 280px;
-            overflow-y: auto;
-        }
-        .download-batch-btn {
-            padding: 12px 16px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 0.9rem;
-            text-align: left;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-        .download-batch-btn:hover,
-        .download-batch-btn:active {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
-
-        /* Download Progress Screen Overlay */
-        #downloadProgressOverlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px);
-            z-index: 100000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        #downloadProgressOverlay.active {
-            display: flex;
-        }
-        .download-progress-box {
-            background: #151515;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 320px;
-            padding: 24px 20px;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-        .download-progress-box h3 {
-            font-size: 1.1rem;
-            margin-bottom: 6px;
-            color: #fff;
-        }
-        .download-status-txt {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            margin-bottom: 18px;
-        }
-        .dl-bar-container {
-            width: 100%;
-            height: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-        .dl-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--accent), #ff4d4d);
-            transition: width 0.2s ease;
-            border-radius: 10px;
-        }
-        .dl-percent-txt {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--accent);
-            margin-bottom: 18px;
-        }
-        .btn-cancel-download {
-            padding: 10px 28px;
-            background: transparent;
-            border: 1px solid #ff4444;
-            color: #ff4444;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-cancel-download:active {
-            background: #ff4444;
-            color: #fff;
-        }
-
         @media (max-width: 480px) {
             #epiPanel { max-width: 200px; }
             .epi-num-btn { width: 34px; height: 34px; font-size: 0.76rem; }
@@ -762,7 +629,7 @@
         .player-overlay button, .player-overlay .video-progress { pointer-events:auto; }
         .player-top { padding:calc(12px + env(safe-area-inset-top)) 16px 30px; background:none; }
         .player-story-title { text-align:left; font-size:1rem; }
-        .btn-back-player,.btn-download-player,.btn-epi-list { background:rgba(20,20,24,.48); width:40px; height:40px; }
+        .btn-back-player,.btn-share-player,.btn-epi-list { background:rgba(20,20,24,.48); width:40px; height:40px; }
         .center-controls { opacity:0; pointer-events:none; transition:opacity .2s; }
         .player-overlay.visible .center-controls { opacity:1; }
         .center-controls button { pointer-events:none; }
@@ -791,7 +658,7 @@
         #playerScreen { background:#050507; }
         .player-top { padding-top:calc(16px + env(safe-area-inset-top)); gap:10px; }
         .player-story-title { font-size:.95rem; letter-spacing:.01em; }
-        .btn-back-player,.btn-download-player,.btn-epi-list { background:rgba(18,18,22,.65); border:1px solid rgba(255,255,255,.16); }
+        .btn-back-player,.btn-share-player,.btn-epi-list { background:rgba(18,18,22,.65); border:1px solid rgba(255,255,255,.16); }
         .player-bottom { padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
         .player-meta-title { font-size:1.22rem; letter-spacing:-.02em; }
         .epi-title-display { display:inline-block; padding:5px 9px; border-radius:6px; background:rgba(255,255,255,.14); color:#fff; font-size:.75rem; }
@@ -801,6 +668,19 @@
         #videoStatus.show { display:block; }
         #videoStatusText { font-size:.88rem; line-height:1.5; }
         #videoRetry { margin-top:12px; border:0; border-radius:999px; padding:10px 22px; color:#fff; font-weight:700; background:#e50914; cursor:pointer; }
+        .header-actions { display:flex; align-items:center; gap:8px; }
+        .sync-btn { border:1px solid var(--border); border-radius:50px; padding:5px 10px; color:#eee; background:var(--surface-2); font-size:.76rem; font-weight:650; cursor:pointer; }
+        .archive-sync-status { margin:10px 12px 0; padding:9px 12px; border-radius:9px; background:rgba(255,255,255,.06); color:#d4d4d4; font-size:.76rem; line-height:1.4; }
+        .archive-sync-status[hidden], .story-open-loading[hidden] { display:none !important; }
+        .archive-sync-status button { color:#ff777f; border:0; background:transparent; font:inherit; font-weight:700; cursor:pointer; }
+        .story-open-loading { position:fixed; inset:0; z-index:99998; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.72); padding:20px; text-align:center; }
+        .story-open-loading-card { padding:22px 24px; border:1px solid var(--border); border-radius:16px; background:#17171c; max-width:320px; }
+        .story-open-loading-icon { font-size:1.7rem; margin-bottom:10px; }
+        .story-open-loading p { color:#eee; font-size:.88rem; line-height:1.45; overflow-wrap:anywhere; }
+        .story-open-loading button { margin-top:16px; border:0; border-radius:20px; padding:8px 16px; color:white; background:#444; cursor:pointer; }
+        .app-notice { position:fixed; z-index:1000001; left:50%; bottom:max(24px,env(safe-area-inset-bottom)); transform:translate(-50%,12px); opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; background:#27272d; border:1px solid rgba(255,255,255,.16); border-radius:10px; box-shadow:0 6px 25px rgba(0,0,0,.5); padding:10px 14px; font-size:.8rem; line-height:1.4; text-align:center; width:max-content; max-width:calc(100vw - 36px); }
+        .app-notice.show { opacity:1; transform:translate(-50%,0); }
+        .btn-like:disabled { opacity:.55; }
     </style>
 </head>
 <body>
@@ -835,20 +715,32 @@
     <div class="home-header">
         <div class="header-top">
             <div class="app-logo">📺 PAWAN TV</div>
-            <div class="points-badge" id="pointsDisplay">🪙 5 Pts</div>
+            <div class="header-actions">
+                <button class="sync-btn" type="button" onclick="refreshArchiveStories()" title="Stories sync karein" aria-label="Sync stories">↻ Sync</button>
+                <div class="points-badge" id="pointsDisplay">🪙 5 Pts</div>
+            </div>
         </div>
         <div class="search-bar">
             <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search stories..." oninput="searchStories(this.value)">
         </div>
     </div>
+    <div class="archive-sync-status" id="archiveSyncStatus" role="status" aria-live="polite" hidden></div>
     <div class="home-content-container" id="homeContent"></div>
 </div>
+
+<div class="story-open-loading" id="storyLoadingScreen" role="status" aria-live="polite" hidden>
+    <div class="story-open-loading-card"><div class="story-open-loading-icon">⏳</div>
+        <p id="storyLoadingText">Episodes load ho rahe hain…</p>
+        <button type="button" onclick="cancelStoryLoading()">Cancel</button>
+    </div>
+</div>
+<div class="app-notice" id="appNotice" role="status" aria-live="polite"></div>
 
 <div id="playerScreen">
     <div class="video-wrapper" id="videoWrapper">
         <video id="mainVideo" playsinline webkit-playsinline></video>
         <!-- Hidden video element for preloading next episode -->
-        <video id="preloadVideo" playsinline webkit-playsinline muted style="display:none;"></video>
+        <video id="preloadVideo" preload="metadata" playsinline webkit-playsinline muted style="display:none;"></video>
         
         <div class="video-loading" id="videoLoading"><div class="spinner"></div></div>
         <div id="videoStatus" role="status"><div id="videoStatusText"></div><button id="videoRetry" type="button" onclick="retryVideo()">Dobara try karein</button></div>
@@ -857,8 +749,7 @@
             <div class="player-top">
                 <button class="btn-back-player" onclick="handleBackBtn()">←</button>
                 <div class="player-story-title" id="playerTitle">Story Name</div>
-                <button class="btn-download-player" onclick="shareStory()" aria-label="Share story" title="Share story">🔗</button>
-                <button class="btn-download-player" onclick="handleDownloadBatchClick()">📥</button>
+                <button class="btn-share-player" onclick="shareStory()" aria-label="Share story" title="Share story">🔗</button>
                 <button class="btn-epi-list" onclick="openEpiPanel()">🎬<span class="epi-count-badge" id="epiCountBadge">1</span></button>
             </div>
             <div class="center-controls">
@@ -900,28 +791,6 @@
         <button class="btn-close-epi" onclick="closeEpiPanelWithHistory()">✕</button>
     </div>
     <div class="epi-number-grid" id="epiNumberGrid"></div>
-</div>
-
-<div id="downloadModal">
-    <div class="download-modal-content">
-        <div class="download-modal-header">
-            <h3>📥 Select Episodes Range</h3>
-            <button class="btn-close-epi" onclick="closeDownloadModal()">✕</button>
-        </div>
-        <div class="download-batch-list" id="downloadBatchList"></div>
-    </div>
-</div>
-
-<div id="downloadProgressOverlay">
-    <div class="download-progress-box">
-        <h3>📥 Downloading...</h3>
-        <div class="download-status-txt" id="dlStatusTxt">Episode 1 Downloading</div>
-        <div class="dl-bar-container">
-            <div class="dl-bar-fill" id="dlBarFill"></div>
-        </div>
-        <div class="dl-percent-txt" id="dlPercentTxt">0%</div>
-        <button class="btn-cancel-download" onclick="cancelDownload()">✕ Cancel Download</button>
-    </div>
 </div>
 
 <script>
@@ -980,7 +849,7 @@ function showAdblockScreen() {
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, increment }
+    import { getFirestore, collection, onSnapshot, doc, runTransaction }
         from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -996,26 +865,8 @@ function showAdblockScreen() {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const SECRET_KEY = "PawanTV_SuperSecretKey_2026";
-    const WORKER_BASE = "https://sorryt-a7c9.aaa39269012.workers.dev/";
-
-    async function generateSecureProxyUrl(storyId, epiIndex) {
-        const exp = Date.now() + (3 * 60 * 1000); // 3 minutes expiry
-        const dataToSign = `${storyId}-${epiIndex}-${exp}-${SECRET_KEY}`;
-        
-        const encoder = new TextEncoder();
-        const keyData = encoder.encode(SECRET_KEY);
-        const msgData = encoder.encode(dataToSign);
-        
-        const cryptoKey = await crypto.subtle.importKey(
-            "raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
-        );
-        const sigBuf = await crypto.subtle.sign("HMAC", cryptoKey, msgData);
-        const signature = Array.from(new Uint8Array(sigBuf))
-            .map(b => b.toString(16).padStart(2, '0')).join('');
-            
-        return `${WORKER_BASE}?story=${storyId}&epi=${epiIndex}&exp=${exp}&sig=${signature}`;
-    }
+    const AD_SECRET_KEY = "PawanTV_SuperSecretKey_2026";
+    const AD_WORKER_BASE = "https://sorryt-a7c9.aaa39269012.workers.dev/";
 
     let stories = [], currentStory = null, currentStoryDocId = null;
     let currentEpiIndex = 0;
@@ -1023,8 +874,659 @@ function showAdblockScreen() {
     let touchStartY = 0, touchStartX = 0;
     let hasLiked = false, viewCounted = false, viewTimer = null;
     let splashHidden = false;
-    let isDownloadCancelled = false;
     let hasPreloadedNext = false;
+
+    function isPlayerOpen() { return document.getElementById('playerScreen').classList.contains('active'); }
+    // Public Internet Archive catalog. No Archive login or API key is needed.
+    const ARCHIVE_PROFILE = '@aaa_a316';
+    const ARCHIVE_QUERY = `_uploader_useritem:${ARCHIVE_PROFILE} AND (mediatype:movies OR format:MPEG4 OR format:"h.264 IA" OR format:"h.264" OR format:WebM OR format:QuickTime OR format:Matroska OR format:"Ogg Video" OR format:"MPEG2-TS" OR format:AVI OR format:"Flash Video" OR format:"Windows Media Video" OR format:MPEG1 OR format:MPEG2 OR format:3GPP)`;
+    const ARCHIVE_REFRESH_MS = 5 * 60 * 1000;
+    const ARCHIVE_META_TTL_MS = 5 * 60 * 1000;
+    const ARCHIVE_META_ERROR_RETRY_MS = 45 * 1000;
+    const ARCHIVE_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+    const ARCHIVE_CATALOG_CACHE = 'pawanTV_archive_catalog_v1';
+    const ARCHIVE_META_CACHE_PREFIX = 'pawanTV_archive_meta_v1__';
+    const ARCHIVE_META_CACHE_INDEX = 'pawanTV_archive_meta_index_v1';
+    const ARCHIVE_META_CACHE_LIMIT = 20;
+    const ARCHIVE_DOC_PREFIX = 'pawan_archive_v1__';
+    const ARCHIVE_MAX_META_REQUESTS = 3;
+    const archiveNameCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+    let firebaseStories = [], archiveItems = [];
+    let firebaseResponded = false, firebaseError = false;
+    let archiveSearchSucceeded = false, archiveSearchBusy = false, archiveSearchError = false;
+    let lastArchiveSearchAttempt = 0, archiveCatalogPromise = null, archiveCatalogRequest = null;
+    let archiveCardObserver = null, archiveRebuildTimer = null;
+    let archiveMetaActive = 0, archiveMetaQueue = [], archiveBackgroundPaused = false;
+    let activeStoryMetadataAttempt = '';
+    const archiveMeta = new Map(), archiveMetaLoadedFromStorage = new Set();
+    const archiveMetaJobs = new Map(), archiveMetaErrors = new Map();
+    let storyOpenSequence = 0, storyOpenInProgress = false, restoreAttempted = false;
+    let pendingSharedStory = null, sharedStoryTimer = null, sharedOpenSequence = 0;
+    let likeWritePending = false, noticeTimer = null;
+    const volatileLikedStatus = Object.create(null);
+    const pendingSavedPlayback = readStoredJSON('pawanTV_lastPlayback', null);
+
+    function readStoredJSON(key, fallback) {
+        try {
+            const value = localStorage.getItem(key);
+            return value ? JSON.parse(value) : fallback;
+        } catch (e) { return fallback; }
+    }
+    function writeStoredJSON(key, value) {
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* Cache is optional. */ }
+    }
+    function validArchiveId(value) {
+        return typeof value === 'string' && /^[A-Za-z0-9_.-]{1,200}$/.test(value) && value !== '.' && value !== '..';
+    }
+    function archiveDocId(identifier) { return ARCHIVE_DOC_PREFIX + identifier; }
+    function archiveImageUrl(identifier) { return `https://archive.org/services/img/${encodeURIComponent(identifier)}`; }
+    function archiveDownloadUrl(identifier, filename) {
+        return `https://archive.org/download/${encodeURIComponent(identifier)}/${filename.split('/').map(encodeURIComponent).join('/')}`;
+    }
+    function decodePathPart(value) {
+        try { return decodeURIComponent(value); } catch (e) { return value; }
+    }
+    function archiveEpisodeFromUrl(value) {
+        if (typeof value !== 'string' || !value.trim()) return null;
+        try {
+            const url = new URL(value.trim());
+            const host = url.hostname.toLowerCase();
+            if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+            let match = null;
+            if (host === 'archive.org' || host === 'www.archive.org') {
+                match = url.pathname.match(/^\/(?:download|stream|serve)\/([^/]+)\/(.+)$/i);
+            } else if (host.endsWith('.archive.org')) {
+                match = url.pathname.match(/^\/(?:\d+\/)?items\/([^/]+)\/(.+)$/i);
+            }
+            if (!match) return null;
+            const identifier = decodePathPart(match[1]);
+            if (!validArchiveId(identifier)) return null;
+            return { identifier, filename: decodePathPart(match[2]) };
+        } catch (e) { return null; }
+    }
+    function canonicalArchiveFilename(filename) {
+        const name = String(filename || '');
+        return (name.normalize ? name.normalize('NFC') : name).replace(/\.ia\.mp4$/i, '.mp4');
+    }
+    function episodeArchiveAliases(episode, identifier) {
+        const parsed = archiveEpisodeFromUrl(episode?.url);
+        if (!parsed || parsed.identifier !== identifier) return [];
+        const names = [parsed.filename];
+        if (typeof episode.archiveOriginalName === 'string') names.push(episode.archiveOriginalName);
+        return [...new Set(names.map(canonicalArchiveFilename))];
+    }
+    function episodeStableKey(episode) {
+        const parsed = archiveEpisodeFromUrl(episode?.url);
+        if (parsed) return `ia:${parsed.identifier}:${canonicalArchiveFilename(episode.archiveOriginalName || parsed.filename)}`;
+        return `url:${typeof episode?.url === 'string' ? episode.url.trim() : ''}`;
+    }
+    function safeImageUrl(value) {
+        if (typeof value !== 'string' || !value.trim()) return '';
+        try {
+            const parsed = new URL(value, window.location.href);
+            if (parsed.protocol === 'https:' || parsed.protocol === 'http:' ||
+                (parsed.protocol === 'data:' && /^data:image\//i.test(value))) return value;
+        } catch (e) {}
+        return '';
+    }
+    function escapeHTML(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+    function storySortTime(story) {
+        const time = story.createdAt;
+        if (time && Number.isFinite(time.seconds)) return time.seconds * 1000;
+        if (time instanceof Date && Number.isFinite(time.getTime())) return time.getTime();
+        const fromArchive = Date.parse(story._archiveAddedAt || '');
+        return Number.isFinite(fromArchive) ? fromArchive : 0;
+    }
+    function countNumber(value) {
+        const number = Number(value);
+        return Number.isFinite(number) ? Math.max(0, number) : 0;
+    }
+    function showAppNotice(message) {
+        const notice = document.getElementById('appNotice');
+        if (!notice) return;
+        notice.textContent = message;
+        notice.classList.add('show');
+        clearTimeout(noticeTimer);
+        noticeTimer = setTimeout(() => notice.classList.remove('show'), 4500);
+    }
+    function renderSyncStatus() {
+        const box = document.getElementById('archiveSyncStatus');
+        if (!box) return;
+        const messages = [];
+        if (firebaseError) messages.push('Database se purani stories load nahi hui.');
+        if (archiveSearchError) messages.push('Stories sync nahi hui; baad mein retry karein.');
+        else if (archiveSearchBusy && !archiveSearchSucceeded && !archiveItems.length) messages.push('Stories load ho rahi hain…');
+        if (!messages.length) { box.hidden = true; box.textContent = ''; return; }
+        box.hidden = false;
+        box.innerHTML = `${escapeHTML(messages.join(' '))}${archiveSearchError ? ' <button type="button" onclick="refreshArchiveStories()">Retry</button>' : ''}`;
+    }
+    async function fetchArchiveJSON(url, externalSignal = null) {
+        const controller = new AbortController();
+        const abortFromCaller = () => controller.abort();
+        if (externalSignal?.aborted) controller.abort();
+        else externalSignal?.addEventListener('abort', abortFromCaller, { once: true });
+        const timer = setTimeout(() => controller.abort(), 15000);
+        try {
+            const response = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+            if (!response.ok) throw new Error(`Archive HTTP ${response.status}`);
+            return await response.json();
+        } finally {
+            clearTimeout(timer);
+            externalSignal?.removeEventListener('abort', abortFromCaller);
+        }
+    }
+    function cleanArchiveItem(item) {
+        if (!item || !validArchiveId(item.identifier)) return null;
+        const rawTitle = Array.isArray(item.title) ? item.title[0] : item.title;
+        const title = typeof rawTitle === 'string' && rawTitle.trim() ? rawTitle.trim() : item.identifier.replace(/[-_]+/g, ' ');
+        return {
+            identifier: item.identifier,
+            title,
+            addeddate: typeof item.addeddate === 'string' ? item.addeddate : (typeof item.publicdate === 'string' ? item.publicdate : '')
+        };
+    }
+    function restoreArchiveCatalogCache() {
+        const saved = readStoredJSON(ARCHIVE_CATALOG_CACHE, null);
+        if (!saved || !Number.isFinite(saved.savedAt) || Date.now() - saved.savedAt > ARCHIVE_CACHE_MAX_AGE_MS || !Array.isArray(saved.items)) return;
+        archiveItems = saved.items.map(cleanArchiveItem).filter(Boolean);
+        archiveItems.forEach(item => loadStoredArchiveMeta(item.identifier));
+    }
+    // Bound optional metadata caching so it cannot grow indefinitely and crowd
+    // out the user's saved playback, points or likes on a phone.
+    function storeArchiveMeta(identifier, result) {
+        const key = ARCHIVE_META_CACHE_PREFIX + identifier;
+        let payload;
+        try { payload = JSON.stringify(result); } catch (e) { return; }
+        if (new TextEncoder().encode(payload).byteLength > 150000) return;
+        let ids = readStoredJSON(ARCHIVE_META_CACHE_INDEX, []);
+        if (!Array.isArray(ids)) ids = [];
+        ids = ids.filter(id => validArchiveId(id) && id !== identifier);
+        try {
+            while (ids.length >= ARCHIVE_META_CACHE_LIMIT) localStorage.removeItem(ARCHIVE_META_CACHE_PREFIX + ids.shift());
+            while (true) {
+                try { localStorage.setItem(key, payload); break; }
+                catch (e) {
+                    if (!ids.length) return;
+                    localStorage.removeItem(ARCHIVE_META_CACHE_PREFIX + ids.shift());
+                }
+            }
+            ids.push(identifier);
+            localStorage.setItem(ARCHIVE_META_CACHE_INDEX, JSON.stringify(ids));
+        } catch (e) { /* A cache write must never prevent playback. */ }
+    }
+    function loadStoredArchiveMeta(identifier) {
+        if (archiveMetaLoadedFromStorage.has(identifier)) return;
+        archiveMetaLoadedFromStorage.add(identifier);
+        const saved = readStoredJSON(ARCHIVE_META_CACHE_PREFIX + identifier, null);
+        if (!saved || !Number.isFinite(saved.checkedAt) || Date.now() - saved.checkedAt > ARCHIVE_CACHE_MAX_AGE_MS) return;
+        if (saved.status === 'ok' && Array.isArray(saved.episodes)) archiveMeta.set(identifier, saved);
+        else if (saved.status === 'unavailable') archiveMeta.set(identifier, saved);
+    }
+    function scheduleArchiveRebuild() {
+        if (archiveRebuildTimer) return;
+        archiveRebuildTimer = setTimeout(() => {
+            archiveRebuildTimer = null;
+            rebuildStories();
+        }, 300);
+    }
+    async function refreshArchiveCatalog(force = false) {
+        if (archiveCatalogPromise) return archiveCatalogPromise;
+        if (archiveBackgroundPaused && !force) return;
+        if (!force && Date.now() - lastArchiveSearchAttempt < ARCHIVE_REFRESH_MS) return;
+        lastArchiveSearchAttempt = Date.now();
+        archiveSearchBusy = true;
+        archiveSearchError = false;
+        renderSyncStatus();
+        const request = { controller: new AbortController(), cancelledForPlayer: false };
+        archiveCatalogRequest = request;
+        const refresh = async () => {
+            try {
+                const found = new Map();
+                let page = 1, total = 0;
+                do {
+                    const params = new URLSearchParams({ q: ARCHIVE_QUERY, rows: '100', page: String(page), output: 'json' });
+                    ['identifier', 'title', 'publicdate', 'addeddate'].forEach(field => params.append('fl[]', field));
+                    params.append('sort[]', 'addeddate desc');
+                    params.append('sort[]', 'identifier asc');
+                    const json = await fetchArchiveJSON(`https://archive.org/advancedsearch.php?${params.toString()}`, request.controller.signal);
+                    if (!json?.response || !Array.isArray(json.response.docs) || !Number.isFinite(Number(json.response.numFound))) {
+                        throw new Error('Invalid Archive search response');
+                    }
+                    const docs = json.response.docs;
+                    total = Number(json.response.numFound);
+                    docs.forEach(raw => {
+                        const item = cleanArchiveItem(raw);
+                        if (item) found.set(item.identifier, item);
+                    });
+                    if (!docs.length) break;
+                    page++;
+                } while ((page - 1) * 100 < total);
+                archiveItems = [...found.values()];
+                archiveItems.forEach(item => loadStoredArchiveMeta(item.identifier));
+                archiveSearchSucceeded = true;
+                archiveSearchError = false;
+                writeStoredJSON(ARCHIVE_CATALOG_CACHE, { savedAt: Date.now(), items: archiveItems });
+                if (force) archiveMeta.forEach(meta => { meta.checkedAt = 0; });
+                rebuildStories();
+                // Hidden/unavailable items are rechecked too; they have no visible card to observe.
+                archiveItems.forEach(item => {
+                    const meta = archiveMeta.get(item.identifier);
+                    if (meta?.status === 'unavailable' && (force || Date.now() - meta.checkedAt >= ARCHIVE_META_TTL_MS)) {
+                        ensureArchiveMetadata(item.identifier, { force }).catch(() => {});
+                    }
+                });
+                hideSplash();
+                if (force) showAppNotice('Stories sync ho gayi.');
+                if (currentStory?._archiveId && isPlayerOpen()) {
+                    ensureArchiveMetadata(currentStory._archiveId, { force, priority: true }).catch(() => {});
+                }
+            } catch (error) {
+                if (request.cancelledForPlayer) {
+                    // A cancelled background search is not a connection failure.
+                    lastArchiveSearchAttempt = 0;
+                } else {
+                    archiveSearchError = true;
+                    rebuildStories();
+                    hideSplash();
+                }
+            } finally {
+                archiveSearchBusy = false;
+                renderSyncStatus();
+                if (archiveCatalogRequest === request) archiveCatalogRequest = null;
+                archiveCatalogPromise = null;
+                if (request.cancelledForPlayer && !archiveBackgroundPaused && !document.hidden) {
+                    setTimeout(() => refreshArchiveCatalog(), 0);
+                }
+            }
+        };
+        archiveCatalogPromise = refresh();
+        return archiveCatalogPromise;
+    }
+    window.refreshArchiveStories = () => refreshArchiveCatalog(true);
+
+    // Pair exact derivative/original metadata, so a .ia.mp4 is not a second episode.
+    // Old derivatives referencing history/files are not used for a replaced original.
+    function archiveEpisodesFromMetadata(identifier, data) {
+        const files = Array.isArray(data?.files) ? data.files : [];
+        const originalVideo = /\.(?:mp4|m4v|webm|ogv|mov|mkv|avi|mpg|mpeg|wmv|flv|ts|mts|m2ts|3gp|3g2)$/i;
+        const playableVideo = /\.(?:mp4|m4v|webm|ogv)$/i;
+        const safeFile = file => file && typeof file.name === 'string' && file.name &&
+            file.private !== true && file.private !== 'true' && !/^history\//i.test(file.name) &&
+            !file.name.split('/').some(part => part === '.' || part === '..');
+        const groups = new Map(), originalNames = new Map();
+        const groupFor = name => {
+            const key = canonicalArchiveFilename(name);
+            if (!groups.has(key)) groups.set(key, { originalName: name, candidates: [] });
+            return groups.get(key);
+        };
+        for (const file of files) {
+            if (!safeFile(file) || file.source === 'derivative' || !originalVideo.test(file.name)) continue;
+            const group = groupFor(file.name);
+            if (/\.ia\.mp4$/i.test(group.originalName) && !/\.ia\.mp4$/i.test(file.name)) group.originalName = file.name;
+            originalNames.set(file.name, group);
+            if (playableVideo.test(file.name)) group.candidates.push({ file, score: /\.ia\.mp4$/i.test(file.name) ? 30 : 20 });
+        }
+        for (const file of files) {
+            if (!safeFile(file) || file.source !== 'derivative' || !playableVideo.test(file.name)) continue;
+            let group;
+            if (typeof file.original === 'string' && file.original) {
+                group = originalNames.get(file.original);
+                if (!group) continue; // E.g. a stale derivative of history/files/episode.mp4.~1~.
+            } else {
+                group = groupFor(file.name);
+            }
+            group.candidates.push({ file, score: /\.ia\.mp4$/i.test(file.name) ? 30 : 10 });
+        }
+        return [...groups.values()]
+            .filter(group => group.candidates.length)
+            .sort((a, b) => archiveNameCollator.compare(a.originalName, b.originalName))
+            .map((group, index) => {
+                group.candidates.sort((a, b) => b.score - a.score);
+                return {
+                    title: `Episode ${index + 1}`,
+                    url: archiveDownloadUrl(identifier, group.candidates[0].file.name),
+                    archiveOriginalName: group.originalName
+                };
+            });
+    }
+    function parseArchiveMetadata(identifier, json) {
+        if (json?.is_dark === true || !json || !json.metadata || !Array.isArray(json.files)) {
+            return { status: 'unavailable', checkedAt: Date.now() };
+        }
+        const rawTitle = Array.isArray(json.metadata.title) ? json.metadata.title[0] : json.metadata.title;
+        // Archive publishes two storage hosts for most public items. Only accept
+        // its own numeric storage hosts and the directory for this exact item.
+        const parts = typeof json.dir === 'string' ? json.dir.split('/') : [];
+        const validDir = parts.length === 4 && parts[0] === '' && /^\d+$/.test(parts[1]) &&
+            parts[2] === 'items' && parts[3] === identifier;
+        const storageServers = validDir ? [...new Set([json.d1, json.d2, json.server]
+            .filter(host => typeof host === 'string' && /^ia\d+\.us\.archive\.org$/i.test(host)))] : [];
+        return {
+            status: 'ok', checkedAt: Date.now(),
+            title: typeof rawTitle === 'string' ? rawTitle.trim() : '',
+            episodes: archiveEpisodesFromMetadata(identifier, json),
+            storageDir: validDir ? json.dir : '',
+            storageServers,
+            defaultServer: storageServers.includes(json.server) ? json.server : ''
+        };
+    }
+    function ensureArchiveMetadata(identifier, options = {}) {
+        if (!validArchiveId(identifier)) return Promise.reject(new Error('Invalid Archive item'));
+        loadStoredArchiveMeta(identifier);
+        const cached = archiveMeta.get(identifier);
+        const cachedHasStorageInfo = cached?.status !== 'ok' || Array.isArray(cached.storageServers);
+        if (!options.force && cached && cachedHasStorageInfo && Date.now() - cached.checkedAt < ARCHIVE_META_TTL_MS) return Promise.resolve(cached);
+        const existing = archiveMetaJobs.get(identifier);
+        if (existing) {
+            if (options.priority) {
+                existing.priority = true;
+                if (existing.queued) {
+                    archiveMetaQueue = archiveMetaQueue.filter(job => job !== existing);
+                    archiveMetaQueue.unshift(existing);
+                    pumpArchiveMetadataQueue();
+                }
+            }
+            return existing.promise;
+        }
+        const lastError = archiveMetaErrors.get(identifier) || 0;
+        if (!options.priority && !options.force && Date.now() - lastError < ARCHIVE_META_ERROR_RETRY_MS) {
+            return Promise.reject(new Error('Archive metadata retry pending'));
+        }
+        let resolveJob, rejectJob;
+        const promise = new Promise((resolve, reject) => { resolveJob = resolve; rejectJob = reject; });
+        const job = { identifier, promise, resolve: resolveJob, reject: rejectJob,
+            queued: true, priority: !!options.priority, controller: null, pausedForVideo: false };
+        archiveMetaJobs.set(identifier, job);
+        if (options.priority) archiveMetaQueue.unshift(job); else archiveMetaQueue.push(job);
+        pumpArchiveMetadataQueue();
+        return promise;
+    }
+    function pumpArchiveMetadataQueue() {
+        while (archiveMetaActive < ARCHIVE_MAX_META_REQUESTS && archiveMetaQueue.length) {
+            const index = archiveBackgroundPaused ? archiveMetaQueue.findIndex(job => job.priority) : 0;
+            if (index < 0) break;
+            const job = archiveMetaQueue.splice(index, 1)[0];
+            job.queued = false;
+            job.controller = new AbortController();
+            archiveMetaActive++;
+            fetchArchiveJSON(`https://archive.org/metadata/${encodeURIComponent(job.identifier)}`, job.controller.signal)
+                .then(json => {
+                    const result = parseArchiveMetadata(job.identifier, json);
+                    archiveMeta.set(job.identifier, result);
+                    archiveMetaErrors.delete(job.identifier);
+                    storeArchiveMeta(job.identifier, result);
+                    scheduleArchiveRebuild();
+                    job.resolve(result);
+                })
+                .catch(error => {
+                    if (!job.pausedForVideo) archiveMetaErrors.set(job.identifier, Date.now());
+                    job.reject(error);
+                })
+                .finally(() => {
+                    archiveMetaActive--;
+                    if (archiveMetaJobs.get(job.identifier) === job) archiveMetaJobs.delete(job.identifier);
+                    pumpArchiveMetadataQueue();
+                });
+        }
+    }
+    // The home catalog used to keep fetching other items while a video opened.
+    // Suspend those requests and unfinished posters, leaving the selected item's
+    // metadata as the only foreground request. Nothing is deleted from Archive.
+    function pauseArchiveBackground(selectedId = '') {
+        archiveBackgroundPaused = true;
+        if (archiveCardObserver) archiveCardObserver.disconnect();
+        if (archiveCatalogRequest) {
+            archiveCatalogRequest.cancelledForPlayer = true;
+            archiveCatalogRequest.controller.abort();
+        }
+        for (const job of archiveMetaJobs.values()) {
+            if (job.identifier === selectedId) { job.priority = true; continue; }
+            job.priority = false;
+            if (!job.queued && job.controller && !job.controller.signal.aborted) {
+                job.pausedForVideo = true;
+                if (archiveMetaJobs.get(job.identifier) === job) archiveMetaJobs.delete(job.identifier);
+                job.controller.abort();
+            }
+        }
+        document.querySelectorAll('.story-poster-user[loading="lazy"]').forEach(img => {
+            if (!img.complete) img.removeAttribute('src');
+        });
+    }
+    function resumeArchiveBackground() {
+        if (!archiveBackgroundPaused) return;
+        archiveBackgroundPaused = false;
+        pumpArchiveMetadataQueue();
+        scheduleArchiveRebuild();
+        if (!document.hidden) refreshArchiveCatalog();
+    }
+    function mergeCuratedEpisodes(existingEpisodes, discoveredEpisodes, identifier) {
+        const existing = Array.isArray(existingEpisodes) ? existingEpisodes.slice() : [];
+        const known = new Set();
+        existing.forEach(ep => episodeArchiveAliases(ep, identifier).forEach(key => known.add(key)));
+        for (const episode of discoveredEpisodes || []) {
+            const aliases = episodeArchiveAliases(episode, identifier);
+            if (aliases.some(key => known.has(key))) continue;
+            existing.push(episode);
+            aliases.forEach(key => known.add(key));
+        }
+        return existing;
+    }
+    function storyArchiveIdentifiers(story) {
+        const ids = new Set();
+        const episodes = Array.isArray(story.episodes) ? story.episodes : [];
+        for (const ep of episodes) {
+            const info = archiveEpisodeFromUrl(ep?.url);
+            if (info) ids.add(info.identifier);
+        }
+        return ids;
+    }
+    function isOurAutoDocument(story) {
+        return story?._pawanArchiveAuto === true && validArchiveId(story.archiveId) && story.docId === archiveDocId(story.archiveId);
+    }
+    function rebuildStories() {
+        const archiveById = new Map(archiveItems.map(item => [item.identifier, item]));
+        const autoDocs = new Map(), curated = [], claimed = new Map();
+        for (const source of firebaseStories) {
+            if (isOurAutoDocument(source)) autoDocs.set(source.archiveId, source);
+            else curated.push(source);
+        }
+        // Existing curated stories always win. Claim every referenced item to prevent duplicates,
+        // but only merge episodes where one story uses that one item exclusively.
+        for (const story of curated) {
+            for (const identifier of storyArchiveIdentifiers(story)) {
+                if (!claimed.has(identifier)) claimed.set(identifier, []);
+                claimed.get(identifier).push(story.docId);
+            }
+        }
+        const nextStories = curated.map(source => {
+            const episodes = Array.isArray(source.episodes) ? source.episodes : [];
+            const ids = [...storyArchiveIdentifiers(source)];
+            const id = ids.length === 1 ? ids[0] : '';
+            const safe = id && (archiveById.has(id) || autoDocs.has(id)) && claimed.get(id)?.length === 1 && episodes.length &&
+                episodes.every(ep => archiveEpisodeFromUrl(ep?.url)?.identifier === id);
+            const meta = safe ? archiveMeta.get(id) : null;
+            const autoStats = safe ? autoDocs.get(id) : null;
+            return {
+                ...source,
+                episodes: meta?.status === 'ok' ? mergeCuratedEpisodes(episodes, meta.episodes, id) : episodes.slice(),
+                views: countNumber(source.views) + countNumber(autoStats?.views),
+                likes: countNumber(source.likes) + countNumber(autoStats?.likes),
+                _archiveId: safe ? id : '',
+                _archiveAddedAt: safe ? (archiveById.get(id)?.addeddate || '') : '',
+                _autoStatsId: autoStats ? autoStats.docId : '',
+                _shareAlias: validShareAlias(source._pawanShareId) ? source._pawanShareId : '',
+                _autoShareAlias: validShareAlias(autoStats?._pawanShareId) ? autoStats._pawanShareId : '',
+                _isArchiveAuto: false
+            };
+        });
+        // During an Archive search outage, previously interacted-with auto stories can
+        // still use their saved Firestore episode snapshot; a successful search is authoritative.
+        if (!archiveSearchSucceeded) {
+            autoDocs.forEach((source, id) => {
+                if (!archiveById.has(id)) archiveById.set(id, { identifier: id, title: source.name || id, addeddate: '' });
+            });
+        }
+        for (const [id, item] of archiveById) {
+            if (claimed.has(id)) continue;
+            const meta = archiveMeta.get(id);
+            if (meta?.status === 'unavailable') continue;
+            const source = autoDocs.get(id);
+            const fallbackEpisodes = Array.isArray(source?.episodes) ? source.episodes : [];
+            nextStories.push({
+                ...(source || {}),
+                docId: archiveDocId(id),
+                name: source?.name || meta?.title || item.title,
+                poster: source?.poster || archiveImageUrl(id),
+                folder: source?.folder || 'Internet Archive',
+                desc: source?.desc || '',
+                episodes: meta?.status === 'ok' ? meta.episodes : fallbackEpisodes,
+                views: countNumber(source?.views), likes: countNumber(source?.likes),
+                _archiveId: id, _archiveAddedAt: item.addeddate, _isArchiveAuto: true,
+                _shareAlias: validShareAlias(source?._pawanShareId) ? source._pawanShareId : '',
+                _archiveMetadataKnown: meta?.status === 'ok'
+            });
+        }
+        nextStories.sort((a, b) => storySortTime(b) - storySortTime(a));
+        const previous = currentStory;
+        const previousKey = previous?.episodes?.[currentEpiIndex] ? episodeStableKey(previous.episodes[currentEpiIndex]) : '';
+        stories = nextStories;
+        if (currentStoryDocId && previous) {
+            let updated = stories.find(story => story.docId === currentStoryDocId);
+            if (!updated && previous._archiveId) {
+                const matches = stories.filter(story => story._archiveId === previous._archiveId);
+                if (matches.length === 1) updated = matches[0];
+            }
+            if (updated) {
+                const nextIndex = previousKey ? updated.episodes.findIndex(ep => episodeStableKey(ep) === previousKey) : currentEpiIndex;
+                // Do not interrupt or silently switch a video that was removed or renamed mid-play.
+                currentStory = nextIndex >= 0 ? updated : { ...updated, episodes: previous.episodes };
+                if (nextIndex >= 0) currentEpiIndex = nextIndex;
+                currentStoryDocId = currentStory.docId;
+                hasLiked = getStoryLikedStatus(currentStory);
+                if (isPlayerOpen()) {
+                    document.getElementById('playerTitle').textContent = currentStory.name || '';
+                    document.getElementById('playerBottomTitle').textContent = currentStory.name || '';
+                    document.getElementById('epiCountBadge').textContent = currentStory.episodes.length;
+                    document.getElementById('currentEpiTitle').textContent = `Ep ${currentEpiIndex + 1}: ${currentStory.episodes[currentEpiIndex]?.title || ''}`;
+                    updateLikeViewUI();
+                    buildEpiGrid();
+                }
+            }
+        }
+        refreshVisibleStories();
+        maybeOpenSharedStory();
+        maybeRestorePlayback();
+    }
+    function watchVisibleArchiveCards() {
+        if (archiveCardObserver) archiveCardObserver.disconnect();
+        if (typeof IntersectionObserver === 'undefined') return;
+        archiveCardObserver = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                archiveCardObserver.unobserve(entry.target);
+                const id = entry.target.getAttribute('data-archive-id');
+                if (id) ensureArchiveMetadata(id).catch(() => {});
+            }
+        }, { rootMargin: '450px 0px' });
+        document.querySelectorAll('.story-card-user[data-archive-id]').forEach(el => archiveCardObserver.observe(el));
+    }
+    function refreshVisibleStories() {
+        const query = String(document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+        const list = query ? stories.filter(s => String(s.name || '').toLowerCase().includes(query) || String(s.folder || '').toLowerCase().includes(query)) : stories;
+        renderHome(list);
+    }
+    function maybeRestorePlayback() {
+        if (pendingSharedStory || !firebaseResponded || restoreAttempted || storyOpenInProgress || currentStoryDocId || !pendingSavedPlayback?.docId) return;
+        let story = stories.find(s => s.docId === pendingSavedPlayback.docId);
+        if (!story && pendingSavedPlayback.archiveId) {
+            const matches = stories.filter(s => s._archiveId === pendingSavedPlayback.archiveId);
+            if (matches.length === 1) story = matches[0];
+        }
+        if (!story) return; // Archive may still be loading; keep the saved position.
+        restoreAttempted = true;
+        openStoryObject(story, { restore: pendingSavedPlayback }).catch(() => {});
+    }
+    function setStoryLoading(show, title = '') {
+        const box = document.getElementById('storyLoadingScreen');
+        box.hidden = !show;
+        document.getElementById('storyLoadingText').textContent = title ? `${title} ke episodes load ho rahe hain…` : 'Episodes load ho rahe hain…';
+    }
+    window.cancelStoryLoading = function() {
+        storyOpenSequence++;
+        sharedOpenSequence++;
+        clearPendingSharedStory();
+        clearSharedUrlFromHistory();
+        storyOpenInProgress = false;
+        setStoryLoading(false);
+        if (!isPlayerOpen()) resumeArchiveBackground();
+    };
+    async function openStoryObject(story, options = {}) {
+        if (!story) return;
+        const sequence = ++storyOpenSequence;
+        storyOpenInProgress = true;
+        const archiveId = story._archiveId;
+        let opened = false;
+        pauseArchiveBackground(archiveId);
+        try {
+            if (story._isArchiveAuto && archiveId) {
+                setStoryLoading(true, story.name);
+                try {
+                    const result = await ensureArchiveMetadata(archiveId, { priority: true });
+                    if (sequence !== storyOpenSequence) return;
+                    if (result.status === 'unavailable') {
+                        rebuildStories();
+                        showAppNotice('Yeh story abhi available nahi hai.');
+                        return;
+                    }
+                    rebuildStories();
+                    const refreshed = stories.find(s => s.docId === story.docId) || stories.find(s => s._archiveId === archiveId);
+                    if (refreshed) story = refreshed;
+                } catch (error) {
+                    if (sequence !== storyOpenSequence) return;
+                    if (!story.episodes?.length) {
+                        showAppNotice('Episodes load nahi hue. Internet check karke retry karein.');
+                        return;
+                    }
+                    showAppNotice('Update nahi mila; saved episodes dikha rahe hain.');
+                }
+                setStoryLoading(false);
+            }
+            if (sequence !== storyOpenSequence) return;
+            if (!story.episodes?.length) {
+                showAppNotice('Playable MP4/WebM episode abhi ready nahi hai. Thodi der baad sync karein.');
+                return;
+            }
+            currentStory = story;
+            currentStoryDocId = story.docId;
+            const saved = options.restore;
+            let position = saved ? Math.max(0, Number(saved.epiIndex) || 0) : 0;
+            let restoreTime = saved ? Math.max(0, Number(saved.time) || 0) : 0;
+            if (saved?.episodeKey) {
+                const matched = story.episodes.findIndex(ep => episodeStableKey(ep) === saved.episodeKey);
+                if (matched >= 0) position = matched;
+                else { position = 0; restoreTime = 0; showAppNotice('Pehle wala episode nahi mila; pehla episode khol rahe hain.'); }
+            }
+            currentEpiIndex = Math.min(position, story.episodes.length - 1);
+            hasLiked = getStoryLikedStatus(story);
+            viewCounted = false;
+            if (saved) { try { localStorage.removeItem('pawanTV_lastPlayback'); } catch (e) {} }
+            openPlayer(restoreTime, !options.reuseHistory);
+            opened = isPlayerOpen();
+            // For a curated Firebase story, wait until the video is fully buffered
+            // before checking for new Archive episodes, so it cannot compete.
+        } finally {
+            if (sequence === storyOpenSequence) {
+                storyOpenInProgress = false;
+                setStoryLoading(false);
+                if (!opened && !isPlayerOpen()) resumeArchiveBackground();
+            }
+        }
+    }
 
     let userPoints = localStorage.getItem('pawanTV_points') !== null 
         ? Math.min(5, parseInt(localStorage.getItem('pawanTV_points')) || 0) 
@@ -1036,13 +1538,117 @@ function showAdblockScreen() {
         if (el) el.textContent = `🪙 ${userPoints} Pts`;
     }
 
-    let cachedAdData = null;
-    let adFetchPromise = null;
-    let adRequestActive = false;
+    let cachedAdData = null, adFetchPromise = null, adRequestActive = false;
+    let adRequestSequence = 0;
     const adTagUrls = [
         "https://surefootedpause.com/d.mRFFzcdeGGNOvoZQG/Uh/Meamt9/uhZpU/lvkHPxTLcX0jNajUUkwHNzTMcyt_NMzHQ/2UNoT/AK2BMRSUZ_s/afW/1MpKd/DF0Tx_"
     ];
-
+    function cancelCurrentAd() {
+        adRequestSequence++;
+        adRequestActive = false;
+        const close = document.getElementById('adCloseBtn');
+        if (close) close.click();
+    }
+    // VAST ad controls are taken from the chosen Linear creative. The client
+    // never substitutes a fixed skip/close timer for the ad server's settings.
+    function vastElements(root, localName) {
+        return root ? Array.from(root.getElementsByTagNameNS('*', localName)) : [];
+    }
+    function vastTimeSeconds(value) {
+        const match = String(value || '').trim().match(/^(\d+):([0-5]\d):([0-5]\d(?:\.\d+)?)$/);
+        if (!match) return null;
+        const seconds = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
+        return Number.isFinite(seconds) ? seconds : null;
+    }
+    function vastOffset(value) {
+        const text = String(value == null ? '' : value).trim();
+        const percent = text.match(/^(\d+(?:\.\d+)?)%$/);
+        if (percent) {
+            const n = Number(percent[1]);
+            return Number.isFinite(n) && n >= 0 && n <= 100 ? { fraction: n / 100 } : null;
+        }
+        const seconds = vastTimeSeconds(text);
+        return seconds == null ? null : { seconds };
+    }
+    function safeAdHttpUrl(value) {
+        if (typeof value !== 'string' || !value.trim()) return '';
+        try {
+            const url = new URL(value.trim(), window.location.href);
+            return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : '';
+        } catch (e) { return ''; }
+    }
+    function vastText(root, name) {
+        return (vastElements(root, name)[0]?.textContent || '').trim();
+    }
+    function parseVastAd(xmlText) {
+        const xml = new DOMParser().parseFromString(xmlText, 'text/xml');
+        if (vastElements(xml, 'parsererror').length) return null;
+        const linears = vastElements(xml, 'Linear');
+        let selected = null, selectedFile = null;
+        for (const linear of linears) {
+            const files = vastElements(linear, 'MediaFile').filter(file => {
+                const type = String(file.getAttribute('type') || '').toLowerCase();
+                const framework = String(file.getAttribute('apiFramework') || '').toLowerCase();
+                return (type.includes('video/mp4') || type.includes('video/webm')) &&
+                    framework !== 'vpaid' && !!safeAdHttpUrl(file.textContent || '');
+            });
+            selectedFile = files.find(file => String(file.getAttribute('type') || '').toLowerCase().includes('video/mp4')) || files[0];
+            if (selectedFile) { selected = linear; break; }
+        }
+        if (!selected || !selectedFile) return null;
+        let adNode = selected;
+        while (adNode && adNode.nodeType === 1 && adNode.localName !== 'Ad') adNode = adNode.parentNode;
+        if (!adNode || adNode.nodeType !== 1) adNode = xml.documentElement;
+        const tracking = {};
+        const progressTracking = [];
+        for (const entry of vastElements(selected, 'Tracking')) {
+            const event = String(entry.getAttribute('event') || '').trim();
+            const url = (entry.textContent || '').trim();
+            if (!event || !url) continue;
+            if (event === 'progress') {
+                const offset = vastOffset(entry.getAttribute('offset'));
+                if (offset) progressTracking.push({ offset, url });
+            } else {
+                (tracking[event] ||= []).push(url);
+            }
+        }
+        const rootErrors = Array.from(xml.documentElement?.children || [])
+            .filter(element => element.localName === 'Error').map(element => (element.textContent || '').trim());
+        const duration = vastTimeSeconds(vastText(selected, 'Duration'));
+        return {
+            adVideoUrl: safeAdHttpUrl(selectedFile.textContent || ''),
+            clickUrl: safeAdHttpUrl(vastText(selected, 'ClickThrough')),
+            duration: duration != null && duration > 0 ? duration : null,
+            skipOffset: vastOffset(selected.getAttribute('skipoffset')),
+            impressions: vastElements(adNode, 'Impression').map(element => (element.textContent || '').trim()).filter(Boolean),
+            clickTracking: vastElements(selected, 'ClickTracking').map(element => (element.textContent || '').trim()).filter(Boolean),
+            errors: [...new Set([...vastElements(adNode, 'Error').map(element => (element.textContent || '').trim()), ...rootErrors].filter(Boolean))],
+            tracking,
+            progressTracking
+        };
+    }
+    // VAST tracking pixels are sent only for events that actually occurred.
+    const activeAdTrackingPixels = new Set();
+    function fireVastTracking(urls, errorCode = '', playhead = 0) {
+        if (!Array.isArray(urls)) return;
+        const seconds = Number.isFinite(playhead) ? Math.max(0, playhead) : 0;
+        const hh = String(Math.floor(seconds / 3600)).padStart(2, '0');
+        const mm = String(Math.floor(seconds / 60) % 60).padStart(2, '0');
+        const ss = (seconds % 60).toFixed(3).padStart(6, '0');
+        const formatted = `${hh}:${mm}:${ss}`;
+        for (const raw of urls) {
+            const expanded = String(raw || '')
+                .replace(/\[ERRORCODE\]/gi, errorCode || '900')
+                .replace(/\[CACHEBUST(?:ING|ER)\]/gi, String(Math.floor(10000000 + Math.random() * 90000000)))
+                .replace(/\[CONTENTPLAYHEAD\]/gi, encodeURIComponent(formatted));
+            const url = safeAdHttpUrl(expanded);
+            if (!url) continue;
+            const pixel = new Image();
+            activeAdTrackingPixels.add(pixel);
+            pixel.onload = pixel.onerror = () => activeAdTrackingPixels.delete(pixel);
+            pixel.src = url;
+        }
+    }
     function preloadAd() {
         if (cachedAdData) return Promise.resolve();
         if (adFetchPromise) return adFetchPromise;
@@ -1050,20 +1656,15 @@ function showAdblockScreen() {
         return adFetchPromise;
     }
     async function fetchAd() {
-
-        for (let tagUrl of adTagUrls) {
+        for (const tagUrl of adTagUrls) {
             try {
                 const exp = Date.now() + (3 * 60 * 1000);
-                const dataToSign = `ad-fetch-0-${exp}-${SECRET_KEY}`;
+                const dataToSign = `ad-fetch-0-${exp}-${AD_SECRET_KEY}`;
                 const encoder = new TextEncoder();
-                const keyData = encoder.encode(SECRET_KEY);
-                const msgData = encoder.encode(dataToSign);
-                const cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-                const sigBuf = await crypto.subtle.sign("HMAC", cryptoKey, msgData);
+                const cryptoKey = await crypto.subtle.importKey('raw', encoder.encode(AD_SECRET_KEY), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+                const sigBuf = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(dataToSign));
                 const signature = Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
-                
-                const workerUrl = `${WORKER_BASE}?url=` + encodeURIComponent(tagUrl) + `&exp=${exp}&sig=${signature}`;
-
+                const workerUrl = `${AD_WORKER_BASE}?url=` + encodeURIComponent(tagUrl) + `&exp=${exp}&sig=${signature}`;
                 const controller = new AbortController();
                 const timeout = setTimeout(() => controller.abort(), 8000);
                 let response, xmlText;
@@ -1072,134 +1673,136 @@ function showAdblockScreen() {
                     if (!response.ok) continue;
                     xmlText = await response.text();
                 } finally { clearTimeout(timeout); }
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                const mediaFiles = xmlDoc.getElementsByTagName("MediaFile");
-                
-                let adVideoUrl = "";
-                for (let i = 0; i < mediaFiles.length; i++) {
-                    const type = mediaFiles[i].getAttribute("type");
-                    if (type && type.includes("video/mp4")) {
-                        adVideoUrl = mediaFiles[i].textContent.trim();
-                        break;
-                    }
-                }
-                // Do not hand an unsupported media type or wrapper URL to the video element.
-                if (!/^https?:\/\//i.test(adVideoUrl)) adVideoUrl = '';
-
-                let clickUrl = "";
-                const clickThroughs = xmlDoc.getElementsByTagName("ClickThrough");
-                if (clickThroughs.length > 0) {
-                    clickUrl = (clickThroughs[0].textContent || "").trim();
-                }
-
-                if (adVideoUrl) {
-                    cachedAdData = { adVideoUrl, clickUrl };
-                    break;
-                }
-            } catch (e) {
-                console.log("Ad preload failed, retrying...", e);
-            }
+                const adData = parseVastAd(xmlText);
+                if (adData?.adVideoUrl) { cachedAdData = adData; break; }
+            } catch (e) { console.log('Ad preload failed, retrying...', e); }
         }
     }
-
     async function triggerAd(onSuccess, onError) {
         if (adRequestActive) return;
         adRequestActive = true;
-        const requestedStoryId = currentStoryDocId;
+        const requestedStoryId = currentStoryDocId, sequence = ++adRequestSequence;
+        const stillCurrent = () => sequence === adRequestSequence && currentStoryDocId === requestedStoryId && isPlayerOpen();
         let attempts = 0;
         const fail = () => {
+            if (!stillCurrent()) return;
             adRequestActive = false;
-            if (currentStoryDocId !== requestedStoryId) return;
             alert('Ad load nahi ho paya. Internet check karke episode phir se select karein; ad chalne ke baad hi points milenge.');
             onError?.();
         };
         const attempt = async () => {
-            if (currentStoryDocId !== requestedStoryId) { adRequestActive = false; return; }
+            if (!stillCurrent()) return;
             attempts++;
             await preloadAd();
-            if (currentStoryDocId !== requestedStoryId) { adRequestActive = false; return; }
+            if (!stillCurrent()) return;
             if (!cachedAdData) {
                 if (attempts < 2) return attempt();
                 return fail();
             }
-            const { adVideoUrl, clickUrl } = cachedAdData;
+            const adData = cachedAdData;
             cachedAdData = null;
-            playInAppAd(adVideoUrl, clickUrl, () => {
-                adRequestActive = false;
-                preloadAd();
-                onSuccess?.();
-            }, (cancelled) => {
+            playInAppAd(adData, () => {
+                if (!stillCurrent()) return;
+                adRequestActive = false; preloadAd(); onSuccess?.();
+            }, cancelled => {
+                if (!stillCurrent()) return;
                 if (cancelled) { adRequestActive = false; onError?.(); return; }
-                if (attempts < 2) attempt();
-                else fail();
+                showAppNotice('Ad load nahi hua; points nahi mile. Dobara try ho raha hai.');
+                if (attempts < 2) attempt(); else fail();
             });
         };
         try { await attempt(); } catch (e) { fail(); }
     }
-
-    function playInAppAd(videoUrl, clickUrl, onSuccess, onError) {
+    function playInAppAd(adData, onSuccess, onError) {
         const overlay = document.createElement('div');
         overlay.id = 'inAppAdOverlay';
         overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999999;display:flex;align-items:center;justify-content:center';
-        overlay.innerHTML = `<video playsinline webkit-playsinline style="width:100%;height:100%;object-fit:contain"></video>
+        overlay.innerHTML = `<video id="inAppAdVideo" playsinline webkit-playsinline style="width:100%;height:100%;object-fit:contain"></video>
             <div style="position:absolute;top:20px;right:20px;color:white;background:#222;padding:8px;border-radius:8px" id="adTimerBadge">Ad loading...</div>
-            <button type="button" aria-label="Close ad" style="position:absolute;top:20px;left:20px;padding:10px;border:0;border-radius:8px;z-index:1">✕ Close</button>
+            <button id="adCloseBtn" type="button" aria-label="Close ad" style="position:absolute;top:20px;left:20px;padding:10px;border:0;border-radius:8px;z-index:1">✕ Close</button>
+            <button id="adSkipBtn" type="button" hidden disabled style="position:absolute;right:18px;bottom:max(25px,env(safe-area-inset-bottom));z-index:2;padding:10px 16px;border:1px solid #aaa;border-radius:8px;background:#111c;color:white;font-weight:700">Skip Ad</button>
             <button type="button" id="adPlayButton" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:14px 20px;background:#fff;color:#111;border:0;border-radius:30px;font-weight:700">▶ Ad chalane ke liye tap karein</button>`;
         document.body.appendChild(overlay);
-        const video = overlay.querySelector('video');
-        const badge = overlay.querySelector('#adTimerBadge');
-        const playButton = overlay.querySelector('#adPlayButton');
-        let finished = false, lastProgress = Date.now(), lastTime = 0, needsTap = false;
-        const onVisibility = () => { lastProgress = Date.now(); };
-        document.addEventListener('visibilitychange', onVisibility);
-        const finish = (success, cancelled = false) => {
-            if (finished) return;
-            finished = true;
-            clearInterval(watchdog);
-            document.removeEventListener('visibilitychange', onVisibility);
-            video.onpause = null;
-            video.pause();
-            video.removeAttribute('src');
-            video.load();
-            overlay.remove();
-            if (success) onSuccess?.();
-            else onError?.(cancelled);
+        const video = overlay.querySelector('video'), badge = overlay.querySelector('#adTimerBadge');
+        const playButton = overlay.querySelector('#adPlayButton'), skipButton = overlay.querySelector('#adSkipBtn');
+        let finished = false, started = false;
+        const tracked = new Set(), progressFired = new Set();
+        const currentTime = () => Number.isFinite(video.currentTime) ? Math.max(0, video.currentTime) : 0;
+        const duration = () => (Number.isFinite(adData.duration) && adData.duration > 0 ? adData.duration :
+            (Number.isFinite(video.duration) && video.duration > 0 ? video.duration : null));
+        const offsetTime = offset => {
+            if (!offset) return null;
+            if (Number.isFinite(offset.seconds)) return offset.seconds;
+            const length = duration();
+            return Number.isFinite(offset.fraction) && length ? offset.fraction * length : null;
         };
-        overlay.querySelector('button').onclick = () => finish(false, true);
-        video.onclick = () => { if (clickUrl && /^https?:\/\//i.test(clickUrl)) window.open(clickUrl, '_blank', 'noopener,noreferrer'); };
+        const trackOnce = event => {
+            if (tracked.has(event)) return;
+            tracked.add(event); fireVastTracking(adData.tracking?.[event], '', currentTime());
+        };
+        function updateProgress() {
+            const elapsed = currentTime(), length = duration();
+            if (started && length) {
+                if (elapsed >= length * 0.25) trackOnce('firstQuartile');
+                if (elapsed >= length * 0.5) trackOnce('midpoint');
+                if (elapsed >= length * 0.75) trackOnce('thirdQuartile');
+            }
+            if (started) (adData.progressTracking || []).forEach((item, index) => {
+                const target = offsetTime(item.offset);
+                if (!progressFired.has(index) && target != null && elapsed >= target) {
+                    progressFired.add(index); fireVastTracking([item.url], '', elapsed);
+                }
+            });
+            const remaining = length ? Math.max(0, Math.ceil(length - elapsed)) : null;
+            badge.textContent = remaining == null ? 'Ad' : `Ad: ${remaining}s`;
+            const skipAt = offsetTime(adData.skipOffset);
+            skipButton.hidden = skipAt == null;
+            skipButton.disabled = skipAt == null || !started || elapsed + 0.001 < skipAt;
+            if (skipAt != null) skipButton.textContent = skipButton.disabled ? `Skip in ${Math.max(0, Math.ceil(skipAt - elapsed))}s` : 'Skip Ad';
+        }
+        const onVisibility = () => {
+            if (!document.hidden && video.paused && !video.ended && !finished) showPlayButton();
+        };
+        document.addEventListener('visibilitychange', onVisibility);
+        const finish = (success, cancelled = false, skipped = false) => {
+            if (finished || (success && !started)) return;
+            if (skipped) {
+                const target = offsetTime(adData.skipOffset);
+                if (target == null || currentTime() + 0.001 < target) return;
+                trackOnce('skip');
+            } else if (success) {
+                updateProgress(); trackOnce('complete');
+            } else if (!cancelled) fireVastTracking(adData.errors, '405', currentTime());
+            finished = true;
+            document.removeEventListener('visibilitychange', onVisibility);
+            video.onpause = null; video.pause(); video.removeAttribute('src'); video.load(); overlay.remove();
+            if (success) onSuccess?.(); else onError?.(cancelled);
+        };
+        overlay.querySelector('#adCloseBtn').onclick = () => finish(false, true);
+        skipButton.onclick = event => { event.preventDefault(); event.stopPropagation(); finish(true, false, true); };
+        video.onclick = () => {
+            if (adData.clickUrl) { fireVastTracking(adData.clickTracking, '', currentTime()); window.open(adData.clickUrl, '_blank', 'noopener,noreferrer'); }
+        };
         function showPlayButton() {
             if (finished) return;
-            needsTap = true;
-            playButton.style.display = 'block';
-            badge.textContent = 'Tap to play ad';
+            playButton.style.display = 'block'; badge.textContent = 'Tap to play ad';
         }
         playButton.onclick = () => {
-            needsTap = false;
-            lastProgress = Date.now();
+            playButton.style.display = 'none'; video.play().catch(showPlayButton);
+        };
+        video.onplaying = () => {
             playButton.style.display = 'none';
-            video.play().catch(showPlayButton);
+            if (!started) { started = true; fireVastTracking(adData.impressions, '', currentTime()); trackOnce('start'); }
+            updateProgress();
         };
-        video.onplaying = () => { needsTap = false; playButton.style.display = 'none'; lastProgress = Date.now(); };
         video.onpause = () => { if (!video.ended && !document.hidden) showPlayButton(); };
-        video.onended = () => finish(true);
+        video.onended = () => { if (started) finish(true); else finish(false); };
         video.onerror = () => finish(false);
-        video.ontimeupdate = () => {
-            if (video.currentTime > lastTime + 0.05) { lastTime = video.currentTime; lastProgress = Date.now(); }
-            const remaining = Number.isFinite(video.duration) ? Math.max(0, Math.ceil(video.duration - video.currentTime)) : null;
-            badge.textContent = remaining === null ? 'Ad' : `Ad: ${remaining}s`;
-            if (video.currentTime >= 30) finish(true);
-        };
-        const watchdog = setInterval(() => {
-            if (document.hidden || needsTap) { lastProgress = Date.now(); return; }
-            if (Date.now() - lastProgress > 12000) finish(false);
-        }, 1000);
-        video.muted = true;
-        video.src = videoUrl;
-        video.play().catch(error => {
-            if (error.name === 'NotAllowedError') showPlayButton();
-            else finish(false);
-        });
+        video.ontimeupdate = updateProgress;
+        video.onloadedmetadata = updateProgress;
+        video.ondurationchange = updateProgress;
+        video.muted = true; video.src = adData.adVideoUrl; updateProgress();
+        video.play().catch(error => { if (error.name === 'NotAllowedError') showPlayButton(); else finish(false); });
     }
 
     function hideSplash() {
@@ -1208,164 +1811,292 @@ function showAdblockScreen() {
         const loading = document.getElementById('loadingScreen');
         loading.classList.add('hide');
         setTimeout(() => { loading.style.display = 'none'; }, 500);
-        document.getElementById('homeScreen').style.display = 'block';
+        document.getElementById('homeScreen').style.display = isPlayerOpen() ? 'none' : 'block';
     }
 
+    // Original public share format: ?story=<ID>. Archive-backed IDs are opaque.
+    const PUBLIC_APP_URL = 'https://pawan-tv.vercel.app/';
+    function validShareAlias(value) { return typeof value === 'string' && /^s_[0-9a-f]{32}$/.test(value); }
+    function makeShareAlias() {
+        const bytes = new Uint8Array(16);
+        if (!globalThis.crypto || typeof globalThis.crypto.getRandomValues !== 'function') throw new Error('Secure random unavailable');
+        globalThis.crypto.getRandomValues(bytes);
+        return 's_' + Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('');
+    }
+    function originalDocIdIsOpaque(story) {
+        const id = story?.docId || '';
+        if (story?._isArchiveAuto || !/^[A-Za-z0-9]{20}$/.test(id) || /archive/i.test(id)) return false;
+        const norm = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normalizedId = norm(id), title = norm(story?.name), archive = norm(story?._archiveId);
+        return !(title.length >= 3 && normalizedId.includes(title)) && !(archive.length >= 3 && normalizedId.includes(archive));
+    }
+    function availableShareId(story) {
+        if (validShareAlias(story?._shareAlias)) return story._shareAlias;
+        return originalDocIdIsOpaque(story) ? story.docId : '';
+    }
+    async function ensureStoryShareId(story) {
+        const known = availableShareId(story);
+        if (known) return known;
+        if (!story?.docId || !firebaseResponded || firebaseError || navigator.onLine === false) throw new Error('Database unavailable');
+        const candidate = makeShareAlias();
+        const ref = doc(db, 'stories', story.docId);
+        const result = await runTransaction(db, async transaction => {
+            const snapshot = await transaction.get(ref);
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                if (story._isArchiveAuto && !isOurAutoDocument({ ...data, docId: story.docId })) throw new Error('Story ID collision');
+                if (validShareAlias(data._pawanShareId)) return data._pawanShareId;
+                transaction.update(ref, { _pawanShareId: candidate });
+            } else {
+                if (!story._isArchiveAuto || !validArchiveId(story._archiveId)) throw new Error('Story no longer exists');
+                transaction.set(ref, { ...autoStoryDocument(story, '', 0), _pawanShareId: candidate });
+            }
+            return candidate;
+        });
+        if (!validShareAlias(result)) throw new Error('Invalid share ID');
+        return result;
+    }
     function homeUrl() {
-        const url = new URL(location.href);
-        url.searchParams.delete('story');
-        return url.pathname + url.search + url.hash;
+        try {
+            const url = new URL(location.href);
+            url.searchParams.delete('story');
+            // Older builds may have appended an Archive identifier; never retain it.
+            url.searchParams.delete('archive');
+            return url.pathname + url.search + url.hash;
+        } catch (e) { return ''; }
     }
     function storyUrl(id) {
         const url = new URL(location.href);
+        url.searchParams.delete('archive');
         url.searchParams.set('story', id);
         return url.toString();
     }
-    function safeHistory(method, state, url) {
-        try { history[method]({ screen: state }, '', url); return true; }
-        catch (error) { console.warn('History navigation unavailable:', error); return false; }
+    function publicStoryUrl(id) {
+        const url = new URL(PUBLIC_APP_URL);
+        url.searchParams.set('story', id);
+        return url.toString();
     }
-    function pushState(state) { safeHistory('pushState', state, location.href); }
-    let pendingStoryId = new URL(location.href).searchParams.get('story');
-    let storiesLoaded = false;
-
-    window.addEventListener('popstate', function() {
-        closeDownloadModal();
-        closeEpiPanel();
-        const id = new URL(location.href).searchParams.get('story');
-        if (id && storiesLoaded) {
-            const index = stories.findIndex(s => s.docId === id);
-            if (index !== -1 && currentStoryDocId !== id) openStoryByIndex(index, false);
-        } else if (!id && document.getElementById('playerScreen').classList.contains('active')) {
-            closePlayerInternal();
+    function safeHistory(method, state, url = '', details = {}) {
+        try { history[method]({ screen: state, ...details }, '', url || ''); return true; }
+        catch (error) {
+            // Some Android file/content URLs refuse path changes. Sharing still uses HTTPS.
+            try { history[method]({ screen: state, ...details }, '', ''); return true; } catch (e) { return false; }
+        }
+    }
+    function pushState(state) { safeHistory('pushState', state); }
+    function validStoryParam(id) {
+        return typeof id === 'string' && id.length > 0 && id.length <= 1500 && id !== '.' && id !== '..' &&
+            !/[\/\u0000-\u001f\u007f]/.test(id);
+    }
+    function readSharedStoryFromLocation() {
+        try {
+            const params = new URL(location.href).searchParams;
+            if (!params.has('story')) return null;
+            const id = params.get('story') || '';
+            return { id, invalid: !validStoryParam(id) };
+        } catch (e) { return null; }
+    }
+    function clearPendingSharedStory() {
+        pendingSharedStory = null;
+        clearTimeout(sharedStoryTimer);
+        sharedStoryTimer = null;
+    }
+    function clearSharedUrlFromHistory() {
+        if (readSharedStoryFromLocation()) safeHistory('replaceState', 'home', homeUrl());
+    }
+    function storyMatchesSharedId(story, id) {
+        return !!story && (story.docId === id || story._autoStatsId === id ||
+            (validShareAlias(id) && (story._shareAlias === id || story._autoShareAlias === id)));
+    }
+    function beginSharedStory(request, reuseHistory = true) {
+        clearPendingSharedStory();
+        restoreAttempted = true;
+        if (!request || request.invalid) {
+            clearSharedUrlFromHistory(); setStoryLoading(false);
+            showAppNotice('Story link sahi nahi hai. Naya link mangayein.'); return;
+        }
+        const pending = { ...request, reuseHistory };
+        pendingSharedStory = pending;
+        try { localStorage.removeItem('pawanTV_lastPlayback'); } catch (e) {}
+        setStoryLoading(true, 'Shared story');
+        sharedStoryTimer = setTimeout(() => {
+            if (pendingSharedStory !== pending) return;
+            clearPendingSharedStory(); clearSharedUrlFromHistory(); setStoryLoading(false);
+            showAppNotice('Story load nahi hui. Internet check karke dobara kholen.');
+        }, 45000);
+        maybeOpenSharedStory();
+    }
+    function maybeOpenSharedStory() {
+        const request = pendingSharedStory;
+        if (!request || !firebaseResponded || storyOpenInProgress || currentStoryDocId) return;
+        let matches;
+        if (request.internal) {
+            matches = stories.filter(item => item.docId === request.id ||
+                (request.archiveId && item._archiveId === request.archiveId));
+        } else {
+            matches = stories.filter(item => storyMatchesSharedId(item, request.id));
+        }
+        if (matches.length !== 1) {
+            if (matches.length === 0 && !archiveSearchSucceeded && !archiveSearchError) return;
+            clearPendingSharedStory(); clearSharedUrlFromHistory(); setStoryLoading(false);
+            showAppNotice(matches.length > 1 ? 'Is link ki story pehchani nahi ja saki.' :
+                (firebaseError || archiveSearchError ? 'Stories load nahi hui. Internet check karke dobara kholen.' :
+                    'Yeh story abhi available nahi hai.'));
+            return;
+        }
+        const story = matches[0];
+        // Old links may contain a readable document/Archive ID. Accept them,
+        // but replace the address with a known opaque alias (or the home URL).
+        if (!request.internal && !validShareAlias(request.id) && !originalDocIdIsOpaque(story)) {
+            const safeId = availableShareId(story);
+            safeHistory('replaceState', 'player', safeId ? storyUrl(safeId) : homeUrl(), {
+                internalStory: { id: story.docId, archiveId: story._archiveId || '' }
+            });
+        }
+        clearPendingSharedStory(); setStoryLoading(false);
+        const sequence = ++sharedOpenSequence;
+        openStoryObject(story, { reuseHistory: request.reuseHistory }).then(() => {
+            if (sequence === sharedOpenSequence && !isPlayerOpen()) clearSharedUrlFromHistory();
+        }).catch(() => {
+            if (sequence !== sharedOpenSequence) return;
+            storyOpenInProgress = false; setStoryLoading(false); clearSharedUrlFromHistory();
+            showAppNotice('Story open nahi hui. Link dobara kholen.');
+        });
+    }
+    window.addEventListener('popstate', function(event) {
+        if (document.getElementById('epiPanel').classList.contains('open')) {
+            closeEpiPanel();
+            if (event.state?.screen === 'player') return;
+        }
+        if (event.state?.screen === 'epiPanel' && isPlayerOpen()) {
+            document.getElementById('epiPanel').classList.add('open');
+            document.getElementById('epiPanelOverlay').classList.add('active');
+            return;
+        }
+        let request = readSharedStoryFromLocation();
+        if (!request && event.state?.screen === 'player' && event.state?.internalStory?.id) {
+            request = { ...event.state.internalStory, internal: true };
+        }
+        if (request && !request.invalid) {
+            if (isPlayerOpen() && currentStory && (request.internal ? currentStory.docId === request.id : storyMatchesSharedId(currentStory, request.id))) return;
+            if (storyOpenInProgress && !isPlayerOpen()) window.cancelStoryLoading();
+            if (isPlayerOpen()) closePlayerInternal();
+            beginSharedStory(request, true);
+        } else {
+            if (storyOpenInProgress && !isPlayerOpen()) window.cancelStoryLoading();
+            else { clearPendingSharedStory(); setStoryLoading(false); }
+            if (isPlayerOpen()) closePlayerInternal();
+            if (request?.invalid) { clearSharedUrlFromHistory(); showAppNotice('Story link sahi nahi hai. Naya link mangayein.'); }
         }
     });
-
     function init() {
         updatePointsUI();
-        // A shared link gets a home entry beneath it so the player back button works.
-        if (pendingStoryId) {
-            const sharedUrl = location.href;
+        const shared = readSharedStoryFromLocation();
+        if (shared && !shared.invalid) {
+            const looksOpaque = validShareAlias(shared.id) || /^[A-Za-z0-9]{20}$/.test(shared.id);
+            const sharedUrl = looksOpaque ? storyUrl(shared.id) : homeUrl();
             safeHistory('replaceState', 'home', homeUrl());
-            safeHistory('pushState', 'player', sharedUrl);
-        } else safeHistory('replaceState', 'home', location.href);
-        setupVideoEvents();
-        setupTouchEvents();
+            const pushed = safeHistory('pushState', 'player', sharedUrl, {
+                internalStory: { id: shared.id }
+            });
+            beginSharedStory(shared, pushed);
+        } else {
+            if (shared) restoreAttempted = true;
+            safeHistory('replaceState', 'home', shared ? homeUrl() : '');
+            if (shared) showAppNotice('Story link sahi nahi hai. Naya link mangayein.');
+        }
+        setupVideoEvents(); setupTouchEvents();
         setTimeout(() => {
             const statusEl = document.getElementById('loadingStatusText');
-            if (statusEl) statusEl.textContent = "Connecting to database...";
+            if (statusEl) statusEl.textContent = 'Connecting to database...';
         }, 800);
-        loadStories();
-        preloadAd();
+        loadStories(); preloadAd();
     }
-
     function loadStories() {
-        onSnapshot(collection(db, 'stories'), (snapshot) => {
-            stories = [];
-            snapshot.forEach(d => stories.push({ docId: d.id, ...d.data() }));
-            stories.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            
+        restoreArchiveCatalogCache();
+        if (archiveItems.length) rebuildStories();
+        onSnapshot(collection(db, 'stories'), snapshot => {
+            firebaseStories = [];
+            snapshot.forEach(d => firebaseStories.push({ ...d.data(), docId: d.id }));
+            firebaseResponded = true; firebaseError = false;
             const statusEl = document.getElementById('loadingStatusText');
-            if (statusEl) statusEl.textContent = "Ready!";
-            
-            setTimeout(hideSplash, 400);
-            renderHome(stories);
-
-            storiesLoaded = true;
-            if (pendingStoryId) {
-                const id = pendingStoryId;
-                pendingStoryId = null;
-                const index = stories.findIndex(s => s.docId === id);
-                if (index !== -1 && stories[index].episodes?.length) {
-                    openStoryByIndex(index, false);
-                } else {
-                    safeHistory('replaceState', 'home', homeUrl());
-                    alert('Yeh story nahi mili ya isme koi episode nahi hai.');
-                }
-                return;
-            }
-            const savedPlayback = JSON.parse(localStorage.getItem('pawanTV_lastPlayback') || 'null');
-            if (savedPlayback && !currentStoryDocId) {
-                const storyIdx = stories.findIndex(s => s.docId === savedPlayback.docId);
-                if (storyIdx !== -1) {
-                    currentStory = stories[storyIdx];
-                    currentStoryDocId = currentStory.docId;
-                    currentEpiIndex = savedPlayback.epiIndex || 0;
-                    localStorage.removeItem('pawanTV_lastPlayback');
-                    openPlayer(savedPlayback.time || 0, true);
-                    return;
-                }
-            }
-
-            if (currentStoryDocId) {
-                const updated = stories.find(s => s.docId === currentStoryDocId);
-                if (updated) { currentStory = updated; updateLikeViewUI(); }
-            }
-        }, (error) => {
-            hideSplash();
-            renderHome(stories);
+            if (statusEl) statusEl.textContent = 'Ready!';
+            rebuildStories(); renderSyncStatus(); setTimeout(hideSplash, 400);
+        }, () => {
+            firebaseResponded = true; firebaseError = true;
+            rebuildStories(); renderSyncStatus(); hideSplash();
         });
+        refreshArchiveCatalog();
+        setInterval(() => { if (!document.hidden && !archiveBackgroundPaused) refreshArchiveCatalog(); }, ARCHIVE_REFRESH_MS);
+        setTimeout(hideSplash, 6500);
     }
 
     function renderHome(list) {
         const content = document.getElementById('homeContent');
         updatePointsUI();
         if (!list.length) {
+            if (archiveCardObserver) archiveCardObserver.disconnect();
             content.innerHTML = '<div class="empty-state"><div class="icon">📺</div><p style="color:#555;margin-top:10px;">Koi story nahi mili</p></div>';
             return;
         }
-        content.innerHTML = `<div class="stories-grid-user">${list.map(s => storyCardHTML(s)).join('')}</div>`;
+        content.innerHTML = `<div class="stories-grid-user">${list.map(storyCardHTML).join('')}</div>`;
+        watchVisibleArchiveCards();
     }
     window.renderHome = renderHome;
-
     function storyCardHTML(story) {
         const idx = stories.findIndex(s => s.docId === story.docId);
-        const posterSrc = story.poster || '';
-        const imgTag = posterSrc
-            ? `<img src="${posterSrc}" class="story-poster-user" loading="lazy" alt="" />`
-            : `<div class="story-poster-placeholder-user"><span>🎬</span></div>`;
-        return `
-            <div class="story-card-user" onclick="openStory(${idx})">
-                ${imgTag}
-                <span class="story-epi-badge">${story.episodes ? story.episodes.length : 0} Ep</span>
-                <span class="story-views-badge">👁️ ${formatNum(story.views || 0)}</span>
-                <h4>${story.name || ''}</h4>
-            </div>
-        `;
+        const posterSrc = safeImageUrl(story.poster);
+        const placeholder = '<div class="story-poster-placeholder-user"><span>🎬</span></div>';
+        const imgTag = posterSrc ? `<img src="${escapeHTML(posterSrc)}" class="story-poster-user" loading="lazy" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="story-poster-placeholder-user" style="display:none"><span>🎬</span></div>` : placeholder;
+        const count = story._isArchiveAuto && !story._archiveMetadataKnown && !story.episodes.length ? '…' : story.episodes.length;
+        const archiveAttr = story._archiveId ? ` data-archive-id="${escapeHTML(story._archiveId)}"` : '';
+        return `<div class="story-card-user" onclick="openStory(${idx})"${archiveAttr}>
+            ${imgTag}<span class="story-epi-badge">${count} Ep</span>
+            <span class="story-views-badge">👁️ ${formatNum(story.views || 0)}</span>
+            <h4>${escapeHTML(story.name || '')}</h4></div>`;
     }
-
-    function formatNum(n) {
-        if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
-        if (n >= 1000) return (n/1000).toFixed(1)+'K';
+    function formatNum(value) {
+        const n = countNumber(value);
+        if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+        if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
         return n.toString();
     }
-
-    window.searchStories = function(query) {
-        if (!query.trim()) { renderHome(stories); return; }
-        const filtered = stories.filter(s =>
-            (s.name || '').toLowerCase().includes(query.toLowerCase()) ||
-            (s.folder || '').toLowerCase().includes(query.toLowerCase())
-        );
-        renderHome(filtered);
-    };
-
-    function openStoryByIndex(index, addHistory = true) {
+    window.searchStories = function() { refreshVisibleStories(); };
+    window.openStory = function(index) {
         const story = stories[index];
-        if (!story || !story.episodes?.length) { alert('Is story mein koi episode nahi hai.'); return; }
-        currentStory = story;
-        currentStoryDocId = story.docId;
-        currentEpiIndex = 0;
-        hasLiked = getLikedStatus(currentStoryDocId);
-        viewCounted = false;
-        openPlayer(0, addHistory);
-    }
-    window.openStory = function(index) { openStoryByIndex(index); };
+        if (!story) return;
+        restoreAttempted = true;
+        if (pendingSharedStory) { clearPendingSharedStory(); clearSharedUrlFromHistory(); setStoryLoading(false); }
+        try { localStorage.removeItem('pawanTV_lastPlayback'); } catch (e) {}
+        openStoryObject(story).catch(() => {
+            storyOpenInProgress = false; setStoryLoading(false); showAppNotice('Story open nahi hui. Dobara try karein.');
+        });
+    };
+    let shareRequestActive = false;
     window.shareStory = async function() {
-        if (!currentStoryDocId) return;
-        const url = storyUrl(currentStoryDocId);
+        if (!currentStoryDocId || !currentStory || shareRequestActive) return;
+        const story = currentStory;
+        shareRequestActive = true;
+        let shareId;
+        try {
+            shareId = await ensureStoryShareId(story);
+            const sameStory = currentStoryDocId === story.docId ||
+                (story._archiveId && currentStory?._archiveId === story._archiveId);
+            if (!sameStory || !isPlayerOpen()) return;
+            if (validShareAlias(shareId)) currentStory._shareAlias = shareId;
+            if (history.state?.screen === 'player') {
+                safeHistory('replaceState', 'player', storyUrl(shareId), {
+                    internalStory: { id: currentStory.docId, archiveId: currentStory._archiveId || '' }
+                });
+            }
+        } catch (error) {
+            showAppNotice('Share link nahi bana. Internet ya Firebase permission check karke dobara try karein.');
+            return;
+        } finally { shareRequestActive = false; }
+        const url = publicStoryUrl(shareId);
         try {
             if (navigator.share) {
-                await navigator.share({ title: currentStory.name || 'Pawan TV', url });
+                await navigator.share({ title: story.name || 'Pawan TV', url });
                 return;
             }
             if (navigator.clipboard && window.isSecureContext) {
@@ -1381,7 +2112,13 @@ function showAdblockScreen() {
 
     function openPlayer(restoreTime = 0, addHistory = true) {
         if (!currentStory || !currentStory.episodes || !currentStory.episodes.length) return;
-        if (addHistory) safeHistory('pushState', 'player', storyUrl(currentStoryDocId));
+        if (addHistory) {
+            const publicId = availableShareId(currentStory);
+            safeHistory('pushState', 'player', publicId ? storyUrl(publicId) : homeUrl(), {
+                internalStory: { id: currentStory.docId, archiveId: currentStory._archiveId || '' }
+            });
+        }
+        document.getElementById('homeScreen').style.display = 'none';
         document.getElementById('playerScreen').classList.add('active');
         document.body.style.overflow = 'hidden';
         document.getElementById('playerTitle').textContent = currentStory.name || '';
@@ -1401,25 +2138,69 @@ function showAdblockScreen() {
     function closePlayerInternal() {
         const video = document.getElementById('mainVideo');
         const preloadVid = document.getElementById('preloadVideo');
-        const adClose = document.querySelector('#inAppAdOverlay button');
-        if (adClose) adClose.click();
+        cancelCurrentAd();
         ++episodeLoadToken;
         clearVideoWatchdog();
         hideVideoStatus();
         video.pause();
-        video.src = '';
-        preloadVid.src = '';
+        video.removeAttribute('src'); video.load();
+        preloadVid.removeAttribute('src'); preloadVid.load();
         document.getElementById('playerScreen').classList.remove('active');
+        if (splashHidden) document.getElementById('homeScreen').style.display = 'block';
         document.body.style.overflow = '';
         localStorage.removeItem('pawanTV_lastPlayback');
         currentStoryDocId = null;
         clearTimers();
         closeEpiPanel();
-        closeDownloadModal();
         clearTimeout(viewTimer);
         updatePointsUI();
+        resumeArchiveBackground();
     }
 
+    function getDirectEpisodeUrl(episode) {
+        return typeof episode?.url === 'string' ? episode.url.trim() : '';
+    }
+
+    // Retry may use the other publicly listed Archive storage copy. It is the
+    // same episode, not a proxy and not an adaptive/lower-quality stream.
+    function getArchiveVideoSources(episode) {
+        const primary = getDirectEpisodeUrl(episode);
+        if (!primary) return [];
+        const info = archiveEpisodeFromUrl(primary);
+        const metadata = info ? archiveMeta.get(info.identifier) : null;
+        if (!info || !metadata?.storageDir || !Array.isArray(metadata.storageServers) ||
+            info.filename.split('/').some(part => part === '.' || part === '..')) return [primary];
+        const parts = metadata.storageDir.split('/');
+        if (parts.length !== 4 || parts[0] !== '' || !/^\d+$/.test(parts[1]) ||
+            parts[2] !== 'items' || parts[3] !== info.identifier) return [primary];
+        let host = '';
+        try { host = new URL(primary).hostname.toLowerCase(); } catch (e) {}
+        const usualHost = host === 'archive.org' || host === 'www.archive.org' ? metadata.defaultServer : host;
+        const servers = metadata.storageServers
+            .filter(server => typeof server === 'string' && /^ia\d+\.us\.archive\.org$/i.test(server))
+            .slice().sort((a, b) => (a === usualHost ? 1 : 0) - (b === usualHost ? 1 : 0));
+        const encodedName = info.filename.split('/').map(encodeURIComponent).join('/');
+        const urls = servers.map(server => `https://${server}${metadata.storageDir}/${encodedName}`);
+        return [...new Set([primary, ...urls])];
+    }
+    function maybeRefreshPlayingStoryMetadata(video) {
+        const id = currentStory?._archiveId;
+        if (!id || !isPlayerOpen() || document.hidden || video.paused || !Number.isFinite(video.duration)) return;
+        const metadata = archiveMeta.get(id);
+        if (metadata?.status === 'ok' && Date.now() - metadata.checkedAt < ARCHIVE_META_TTL_MS) return;
+        let fullyBuffered = false;
+        try {
+            for (let i = 0; i < video.buffered.length; i++) {
+                if (video.buffered.start(i) <= video.currentTime && video.buffered.end(i) >= video.duration - 0.25) fullyBuffered = true;
+            }
+        } catch (e) {}
+        if (!fullyBuffered) return;
+        const attempt = `${currentStory.docId}:${episodeLoadToken}`;
+        if (activeStoryMetadataAttempt === attempt) return;
+        activeStoryMetadataAttempt = attempt;
+        ensureArchiveMetadata(id, { priority: true }).catch(() => {});
+    }
+    let videoSourceIndex = 0;
     let episodeLoadToken = 0;
     let lastPlaybackSavedAt = 0;
     let videoLoadWatchdog = null;
@@ -1447,10 +2228,10 @@ function showAdblockScreen() {
             video.play().catch(() => { video.dataset.needsPlay = '1'; showVideoStatus('Video chalane ke liye neeche tap karein.', '▶ Play'); });
         } else if (currentStoryDocId) {
             hideVideoStatus();
-            loadEpisode(currentEpiIndex, Number.isFinite(video.currentTime) ? video.currentTime : 0);
+            loadEpisode(currentEpiIndex, Number.isFinite(video.currentTime) ? video.currentTime : 0, true);
         }
     };
-    async function loadEpisode(index, restoreTime = 0) {
+    async function loadEpisode(index, restoreTime = 0, retryAttempt = false) {
         if (!currentStory) return;
         if (index < 0) index = 0;
         if (index >= currentStory.episodes.length) return;
@@ -1459,26 +2240,30 @@ function showAdblockScreen() {
         const storyId = currentStoryDocId;
         currentEpiIndex = index;
         hasPreloadedNext = false;
+        const preload = document.getElementById('preloadVideo');
+        preload.removeAttribute('src'); preload.load();
         const epi = currentStory.episodes[index];
         const video = document.getElementById('mainVideo');
         hideVideoStatus();
         video.dataset.needsPlay = '0';
         document.getElementById('videoLoading').classList.add('show');
         startVideoWatchdog();
-        let workerProxyUrl;
-        try { workerProxyUrl = await generateSecureProxyUrl(storyId, index); }
-        catch (err) { clearVideoWatchdog(); showVideoStatus('Video link nahi ban paya. HTTPS website par dobara try karein.'); return; }
-        if (loadToken !== episodeLoadToken || currentStoryDocId !== storyId) return;
-        video.src = workerProxyUrl;
-        video.load();
-
-        if (restoreTime > 0) {
-            const onMeta = () => {
-                video.currentTime = restoreTime;
-                video.removeEventListener('loadedmetadata', onMeta);
-            };
-            video.addEventListener('loadedmetadata', onMeta);
+        const directUrl = getDirectEpisodeUrl(epi);
+        const sources = getArchiveVideoSources(epi);
+        if (!directUrl || !sources.length || !/^https?:\/\//i.test(directUrl)) {
+            clearVideoWatchdog(); showVideoStatus('Video link available nahi hai.'); return;
         }
+        videoSourceIndex = retryAttempt ? (videoSourceIndex + 1) % sources.length : 0;
+        if (loadToken !== episodeLoadToken || currentStoryDocId !== storyId) return;
+        if (restoreTime > 0) {
+            video.addEventListener('loadedmetadata', () => {
+                if (loadToken !== episodeLoadToken || currentStoryDocId !== storyId) return;
+                const end = Number.isFinite(video.duration) ? Math.max(0, video.duration - 0.1) : restoreTime;
+                try { video.currentTime = Math.min(restoreTime, end); } catch (e) {}
+            }, { once: true });
+        }
+        video.src = sources[videoSourceIndex];
+        video.load();
 
         video.play().catch(error => {
             if (loadToken !== episodeLoadToken) return;
@@ -1501,28 +2286,104 @@ function showAdblockScreen() {
         }
     }
 
-    async function countView() {
-        if (!currentStoryDocId) return;
-        try { await updateDoc(doc(db, 'stories', currentStoryDocId), { views: increment(1) }); } catch(e) {}
+    function getStoryLikeKeys(story) {
+        if (!story?.docId) return [];
+        return [...new Set([story.docId, story._autoStatsId].filter(Boolean))];
     }
-
+    function getStoryLikedStatus(story) {
+        return getStoryLikeKeys(story).some(getLikedStatus);
+    }
+    function autoStoryDocument(story, field, delta) {
+        const sourceEpisodes = Array.isArray(story.episodes) ? story.episodes : [];
+        let episodes = sourceEpisodes.map(ep => ({
+            title: String(ep?.title || ''),
+            url: String(ep?.url || ''),
+            ...(typeof ep?.archiveOriginalName === 'string' ? { archiveOriginalName: ep.archiveOriginalName } : {})
+        }));
+        // Firestore documents have a 1 MiB limit. The Archive manifest remains the source
+        // of truth even if an unusually large list cannot fit in this optional snapshot.
+        if (new TextEncoder().encode(JSON.stringify(episodes)).byteLength > 600000) episodes = [];
+        const date = new Date(story._archiveAddedAt || Date.now());
+        return {
+            _pawanArchiveAuto: true,
+            archiveId: story._archiveId,
+            name: String(story.name || story._archiveId),
+            poster: String(story.poster || archiveImageUrl(story._archiveId)),
+            folder: String(story.folder || 'Internet Archive'),
+            desc: String(story.desc || ''),
+            episodes,
+            views: field === 'views' ? Math.max(0, delta) : 0,
+            likes: field === 'likes' ? Math.max(0, delta) : 0,
+            createdAt: Number.isFinite(date.getTime()) ? date : new Date()
+        };
+    }
+    // A new Archive story gets a full Firestore record only on its first real
+    // view/like, not a bulk catalog write. A transaction prevents races and never
+    // overwrites an existing record's title, poster, folder or episode list.
+    async function changeStoryCounter(story, targets, field, delta) {
+        if (!story || !['likes', 'views'].includes(field) || !targets.length) throw new Error('Invalid counter update');
+        // Until the curated catalog is known, creating an automatic record could
+        // duplicate a story whose existing Firebase document has not arrived yet.
+        if (!firebaseResponded || firebaseError) throw new Error('Database catalog not ready');
+        if (navigator.onLine === false) throw new Error('Offline');
+        await runTransaction(db, async transaction => {
+            const records = [];
+            // Firestore requires all transaction reads to occur before any writes.
+            for (const targetId of targets) {
+                const ref = doc(db, 'stories', targetId);
+                records.push({ targetId, ref, snapshot: await transaction.get(ref) });
+            }
+            for (const record of records) {
+                const isAutoTarget = !!story._archiveId && record.targetId === archiveDocId(story._archiveId);
+                if (record.snapshot.exists()) {
+                    const data = record.snapshot.data();
+                    if (isAutoTarget && !isOurAutoDocument({ ...data, docId: record.targetId })) {
+                        throw new Error('Auto story ID belongs to another record');
+                    }
+                    transaction.update(record.ref, { [field]: Math.max(0, countNumber(data[field]) + delta) });
+                } else {
+                    if (!isAutoTarget || !story._isArchiveAuto || delta < 0) throw new Error('Story record not found');
+                    transaction.set(record.ref, autoStoryDocument(story, field, delta));
+                }
+            }
+        });
+    }
+    async function countView() {
+        if (!currentStory || !currentStoryDocId) return;
+        const story = currentStory;
+        try { await changeStoryCounter(story, [story.docId], 'views', 1); }
+        catch (e) { showAppNotice('View save nahi hua. Internet ya Firebase permissions check karein.'); }
+    }
     window.toggleLike = async function() {
-        if (!currentStoryDocId) return;
+        if (!currentStory || !currentStoryDocId || likeWritePending) return;
+        const story = currentStory;
+        const likedKeys = getStoryLikeKeys(story).filter(getLikedStatus);
+        const willLike = !likedKeys.length;
+        const targets = willLike ? [story.docId] : likedKeys;
         const btn = document.getElementById('likeBtn');
-        if (!hasLiked) {
-            hasLiked = true;
-            setLikedStatus(currentStoryDocId, true);
-            btn.classList.add('liked', 'animate');
-            btn.querySelector('.heart-icon').textContent = '❤️';
-            setTimeout(() => btn.classList.remove('animate'), 300);
-            showLikePopup();
-            try { await updateDoc(doc(db, 'stories', currentStoryDocId), { likes: increment(1) }); } catch(e) {}
-        } else {
-            hasLiked = false;
-            setLikedStatus(currentStoryDocId, false);
-            btn.classList.remove('liked');
-            btn.querySelector('.heart-icon').textContent = '🤍';
-            try { await updateDoc(doc(db, 'stories', currentStoryDocId), { likes: increment(-1) }); } catch(e) {}
+        likeWritePending = true;
+        btn.disabled = true;
+        try {
+            await changeStoryCounter(story, targets, 'likes', willLike ? 1 : -1);
+            let savedOnDevice = true;
+            targets.forEach(key => { if (!setLikedStatus(key, willLike)) savedOnDevice = false; });
+            if (!savedOnDevice) showAppNotice('Like save hua, lekin device storage full hai; selection yaad nahi rahegi.');
+            // The viewer may have switched stories while the network request ran.
+            if (currentStory && (currentStory.docId === story.docId ||
+                (story._archiveId && currentStory._archiveId === story._archiveId))) {
+                hasLiked = getStoryLikedStatus(currentStory);
+                updateLikeViewUI();
+                if (willLike) {
+                    btn.classList.add('animate');
+                    setTimeout(() => btn.classList.remove('animate'), 300);
+                    showLikePopup();
+                }
+            }
+        } catch (e) {
+            showAppNotice('Like save nahi hua. Internet ya Firebase permissions check karein.');
+        } finally {
+            likeWritePending = false;
+            btn.disabled = false;
         }
     };
 
@@ -1547,12 +2408,32 @@ function showAdblockScreen() {
     }
 
     function getLikedStatus(docId) {
-        return !!(JSON.parse(localStorage.getItem('pawanTV_likes') || '{}')?.[docId]);
+        if (Object.prototype.hasOwnProperty.call(volatileLikedStatus, docId)) return volatileLikedStatus[docId];
+        const liked = readStoredJSON('pawanTV_likes', {});
+        return !!liked?.[docId];
     }
     function setLikedStatus(docId, status) {
-        const liked = JSON.parse(localStorage.getItem('pawanTV_likes') || '{}');
+        let liked = readStoredJSON('pawanTV_likes', {});
+        if (!liked || typeof liked !== 'object' || Array.isArray(liked)) liked = {};
         liked[docId] = status;
-        localStorage.setItem('pawanTV_likes', JSON.stringify(liked));
+        volatileLikedStatus[docId] = status;
+        try {
+            localStorage.setItem('pawanTV_likes', JSON.stringify(liked));
+            return true;
+        } catch (e) {
+            // Optional Archive metadata may be discarded, but the like state matters.
+            try {
+                const cachedKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key?.startsWith(ARCHIVE_META_CACHE_PREFIX)) cachedKeys.push(key);
+                }
+                cachedKeys.forEach(key => localStorage.removeItem(key));
+                localStorage.removeItem(ARCHIVE_META_CACHE_INDEX);
+                localStorage.setItem('pawanTV_likes', JSON.stringify(liked));
+                return true;
+            } catch (ignore) { return false; }
+        }
     }
 
     window.togglePlayPause = function() {
@@ -1669,21 +2550,27 @@ function showAdblockScreen() {
                 document.getElementById('durationLabel').textContent = formatTime(video.duration);
                 const progressPercent = (video.currentTime / video.duration) * 100;
                 document.getElementById('progressFill').style.width = progressPercent + '%';
+                maybeRefreshPlayingStoryMetadata(video);
                 
                 const timeLeft = video.duration - video.currentTime;
-                if (timeLeft <= 10 && !hasPreloadedNext && currentStory && currentEpiIndex < currentStory.episodes.length - 1) {
-                    hasPreloadedNext = true;
-                    generateSecureProxyUrl(currentStoryDocId, currentEpiIndex + 1).then(nextProxyUrl => {
-                        preloadVid.src = nextProxyUrl;
-                        preloadVid.load();
-                    });
+                if (timeLeft <= 10 && !hasPreloadedNext && currentStory && currentEpiIndex < currentStory.episodes.length - 1 && !video.paused && !document.hidden) {
+                    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                    const slow = connection && (connection.saveData || ['slow-2g','2g','3g'].includes(connection.effectiveType) || (Number.isFinite(connection.downlink) && connection.downlink < 3));
+                    let fullyBuffered = false;
+                    try { for (let i = 0; i < video.buffered.length; i++) if (video.buffered.start(i) <= video.currentTime && video.buffered.end(i) >= video.duration - 0.25) fullyBuffered = true; } catch (e) {}
+                    if (!slow && fullyBuffered) {
+                        const nextUrl = getDirectEpisodeUrl(currentStory.episodes[currentEpiIndex + 1]);
+                        if (nextUrl) { hasPreloadedNext = true; preloadVid.preload = 'metadata'; preloadVid.src = nextUrl; preloadVid.load(); }
+                    }
                 }
 
                 if (currentStoryDocId && !video.paused && video.currentTime > 2 && Date.now() - lastPlaybackSavedAt > 4000) {
                     lastPlaybackSavedAt = Date.now();
                     localStorage.setItem('pawanTV_lastPlayback', JSON.stringify({
                         docId: currentStoryDocId,
+                        archiveId: currentStory?._archiveId || '',
                         epiIndex: currentEpiIndex,
+                        episodeKey: episodeStableKey(currentStory?.episodes?.[currentEpiIndex]),
                         time: video.currentTime
                     }));
                 }
@@ -1741,7 +2628,7 @@ function showAdblockScreen() {
                 <button class="epi-num-btn ${isPlaying}"
                         id="epi-num-${i}"
                         onclick="selectEpisode(${i})"
-                        title="${epi.title || ''}">
+                        title="${escapeHTML(epi.title || '')}">
                     ${i + 1}
                 </button>
             `;
@@ -1775,137 +2662,6 @@ function showAdblockScreen() {
     }
     window.closeEpiPanelWithHistory = function() { history.back(); };
 
-    window.handleDownloadBatchClick = function() {
-        openDownloadModal();
-    };
-
-    window.openDownloadModal = function() {
-        if (!currentStory || !currentStory.episodes || !currentStory.episodes.length) return;
-        const video = document.getElementById('mainVideo');
-        if (video && !video.paused) {
-            video.pause();
-            document.getElementById('playPauseBtn').textContent = '▶';
-        }
-        const batchListEl = document.getElementById('downloadBatchList');
-        const totalEpis = currentStory.episodes.length;
-        const batchSize = 5;
-        let html = '';
-        for (let i = 0; i < totalEpis; i += batchSize) {
-            const start = i;
-            const end = Math.min(i + batchSize, totalEpis);
-            html += `
-                <button onclick="handleBatchRangeClick(${start}, ${end})" class="download-batch-btn">
-                    <span>Epi ${start + 1} to ${end}</span>
-                    <span>⬇️</span>
-                </button>
-            `;
-        }
-        batchListEl.innerHTML = html;
-        document.getElementById('downloadModal').classList.add('active');
-        pushState('downloadModal');
-    };
-
-    window.closeDownloadModal = function() {
-        document.getElementById('downloadModal').classList.remove('active');
-    };
-
-    window.handleBatchRangeClick = function(start, end) {
-        closeDownloadModal();
-        triggerAd(
-            () => { downloadBatch(start, end); },
-            () => {}
-        );
-    };
-
-    window.cancelDownload = function() {
-        isDownloadCancelled = true;
-        document.getElementById('downloadProgressOverlay').classList.remove('active');
-    };
-
-    window.downloadBatch = async function(startIndex, endIndex) {
-        if (!currentStory || !currentStory.episodes) return;
-        const batchEpisodes = currentStory.episodes.slice(startIndex, endIndex);
-        isDownloadCancelled = false;
-
-        const overlay = document.getElementById('downloadProgressOverlay');
-        const statusTxt = document.getElementById('dlStatusTxt');
-        const barFill = document.getElementById('dlBarFill');
-        const percentTxt = document.getElementById('dlPercentTxt');
-        overlay.classList.add('active');
-
-        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-        for (let i = 0; i < batchEpisodes.length; i++) {
-            if (isDownloadCancelled) break;
-            const epiNum = startIndex + i + 1;
-            const actualIndex = startIndex + i;
-            
-            const finalUrl = await generateSecureProxyUrl(currentStoryDocId, actualIndex);
-
-            statusTxt.textContent = `Episode ${epiNum} of ${endIndex} Downloading...`;
-            barFill.style.width = '0%';
-            percentTxt.textContent = '0%';
-
-            let downloadSuccess = false;
-
-            try {
-                const response = await fetch(finalUrl);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const reader = response.body.getReader();
-                const contentLength = +response.headers.get('Content-Length') || 0;
-
-                let receivedLength = 0;
-                let chunks = [];
-
-                while (true) {
-                    if (isDownloadCancelled) { reader.cancel(); break; }
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    chunks.push(value);
-                    receivedLength += value.length;
-                    if (contentLength > 0) {
-                        const percent = Math.round((receivedLength / contentLength) * 100);
-                        barFill.style.width = percent + '%';
-                        percentTxt.textContent = percent + '%';
-                    } else {
-                        barFill.style.width = '50%';
-                        percentTxt.textContent = 'Downloading...';
-                    }
-                }
-
-                if (isDownloadCancelled) break;
-
-                barFill.style.width = '100%';
-                percentTxt.textContent = '100%';
-                statusTxt.textContent = `Episode ${epiNum} Saving...`;
-
-                const blob = new Blob(chunks, { type: 'video/mp4' });
-                const blobUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = `${currentStory.name || 'Story'}_Episode_${epiNum}.mp4`;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
-                downloadSuccess = true;
-
-            } catch (error) {
-                if (error.name === "AbortError" || isDownloadCancelled) break;
-                statusTxt.textContent = `Episode ${epiNum} failed. Skipping...`;
-                await wait(1200);
-            }
-
-            if (downloadSuccess && !isDownloadCancelled) {
-                statusTxt.textContent = `Episode ${epiNum} Done ✓  Next starting...`;
-                await wait(1500);
-            }
-        }
-        overlay.classList.remove('active');
-        isDownloadCancelled = false;
-    };
-
     document.addEventListener('keydown', e => {
         if (!document.getElementById('playerScreen').classList.contains('active')) return;
         if (e.key === 'Escape') history.back();
@@ -1916,9 +2672,10 @@ function showAdblockScreen() {
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) document.getElementById('mainVideo').pause();
+        else if (!archiveBackgroundPaused) refreshArchiveCatalog();
     });
 
     init();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a565faaf18e64fd4',t:'MTc5Mzk4NzgzMg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a565faaf18e64fd4',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a56e4bcc692899af',t:'MTc5NDA3NTA0MA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a56e4bcc692899af',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
