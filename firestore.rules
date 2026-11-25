@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // All browser/client direct reads and writes are completely blocked.
+    // Only the Vercel backend using Firebase Admin SDK (Service Account) can access Firestore.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
